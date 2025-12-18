@@ -1,0 +1,271 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { strapiGet } from "../../lib/strapi";
+
+export const prerender = false;
+
+const res = await strapiGet("/api/shows", {
+  sort: "name:asc",
+  "populate[0]": "logo",
+  "populate[1]": "series",
+});
+
+const showsRaw = res?.data ?? [];
+
+// Normalize Strapi v4 + v5-ish shapes
+const norm = (item) => (item?.attributes ? { ...item.attributes, id: item.id } : item);
+const shows = showsRaw.map(norm);
+
+// Extract series safely
+const getSeries = (show) => {
+  const raw = show?.series;
+  const clean = (v) => (v == null ? "" : String(v)).trim();
+
+  const v4 = raw?.data?.attributes;
+
+  const name = clean(raw?.name ?? raw?.attributes?.name ?? v4?.name ?? "");
+  const slug = clean(raw?.slug ?? raw?.attributes?.slug ?? v4?.slug ?? "");
+
+  return { name, slug, key: (slug || name).toLowerCase() };
+};
+
+// Bucketing rules
+const isNNR = (s) =>
+  s.key.includes("northwestern") ||
+  s.key.includes("northwetsern") || // typo-safe
+  s.key === "nnr";
+
+const isNNX = (s) =>
+  s.key === "nnx" || s.key.includes("nnx");
+
+const nnrShows = [];
+const nnxShows = [];
+const otherShows = [];
+
+for (const show of shows) {
+  const s = getSeries(show);
+  if (isNNR(s)) nnrShows.push(show);
+  else if (isNNX(s)) nnxShows.push(show);
+  else otherShows.push(show);
+}
+---
+
+<BaseLayout title="Shows · NNN">
+  <div class="card card-pad">
+    <div class="kicker">
+      <span class="pill">Shows</span>
+      <span>Series & recurring programs</span>
+    </div>
+    <h1 class="h1">Shows</h1>
+    <p class="dek">Take a look at our latest shows.</p>
+  </div>
+
+  <div style="height:14px;"></div>
+
+  <div class="card card-pad">
+    <div class="section-title">Northwestern News Report</div>
+
+    {nnrShows.length ? (
+      <div class="shows-grid">
+        {nnrShows.map((show) => {
+          const name = show?.name ?? "Untitled show";
+          const slug = show?.slug;
+
+          const img =
+            show?.logo?.url ??
+            show?.logo?.data?.attributes?.url ??
+            show?.logo?.data?.url;
+
+          const alt =
+            show?.logo?.alternativeText ??
+            show?.logo?.data?.attributes?.alternativeText ??
+            name;
+
+          const Wrapper = slug ? "a" : "div";
+          const props = slug
+            ? { href: `/shows/${slug}`, class: "showcard" }
+            : { class: "showcard showcard-disabled" };
+
+          return (
+            <Wrapper {...props}>
+              {img ? (
+                <div class="thumb" style="width:100%; aspect-ratio:16/9;">
+                  <img src={img} alt={alt} loading="lazy" />
+                </div>
+              ) : null}
+
+              <div style="padding:14px;">
+                <div class="story-meta">Show</div>
+                <div class="story-title" style="font-size:18px;">
+                  {name}
+                </div>
+
+                {show?.description ? (
+                  <div class="story-dek">{show.description}</div>
+                ) : null}
+
+                <div style="margin-top:10px; font-weight:850; color: var(--accent2);">
+                  {slug ? "View show →" : "Missing slug →"}
+                </div>
+              </div>
+            </Wrapper>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="story-dek" style="margin-top:8px;">
+        No Northwestern News Report shows yet.
+      </div>
+    )}
+
+    <div style="height:18px;"></div>
+
+    <div class="section-title">NNX</div>
+
+    {nnxShows.length ? (
+      <div class="shows-grid">
+        {nnxShows.map((show) => {
+          const name = show?.name ?? "Untitled show";
+          const slug = show?.slug;
+
+          const img =
+            show?.logo?.url ??
+            show?.logo?.data?.attributes?.url ??
+            show?.logo?.data?.url;
+
+          const alt =
+            show?.logo?.alternativeText ??
+            show?.logo?.data?.attributes?.alternativeText ??
+            name;
+
+          const Wrapper = slug ? "a" : "div";
+          const props = slug
+            ? { href: `/shows/${slug}`, class: "showcard" }
+            : { class: "showcard showcard-disabled" };
+
+          return (
+            <Wrapper {...props}>
+              {img ? (
+                <div class="thumb" style="width:100%; aspect-ratio:16/9;">
+                  <img src={img} alt={alt} loading="lazy" />
+                </div>
+              ) : null}
+
+              <div style="padding:14px;">
+                <div class="story-meta">Show</div>
+                <div class="story-title" style="font-size:18px;">
+                  {name}
+                </div>
+
+                {show?.description ? (
+                  <div class="story-dek">{show.description}</div>
+                ) : null}
+
+                <div style="margin-top:10px; font-weight:850; color: var(--accent2);">
+                  {slug ? "View show →" : "Missing slug →"}
+                </div>
+              </div>
+            </Wrapper>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="story-dek" style="margin-top:8px;">
+        No NNX shows yet.
+      </div>
+    )}
+
+    {otherShows.length ? (
+      <>
+        <div style="height:18px;"></div>
+        <div class="section-title">Other</div>
+
+        <div class="shows-grid">
+          {otherShows.map((show) => {
+            const name = show?.name ?? "Untitled show";
+            const slug = show?.slug;
+
+            const img =
+              show?.logo?.url ??
+              show?.logo?.data?.attributes?.url ??
+              show?.logo?.data?.url;
+
+            const alt =
+              show?.logo?.alternativeText ??
+              show?.logo?.data?.attributes?.alternativeText ??
+              name;
+
+            const Wrapper = slug ? "a" : "div";
+            const props = slug
+              ? { href: `/shows/${slug}`, class: "showcard" }
+              : { class: "showcard showcard-disabled" };
+
+            return (
+              <Wrapper {...props}>
+                {img ? (
+                  <div class="thumb" style="width:100%; aspect-ratio:16/9;">
+                    <img src={img} alt={alt} loading="lazy" />
+                  </div>
+                ) : null}
+
+                <div style="padding:14px;">
+                  <div class="story-meta">Show</div>
+                  <div class="story-title" style="font-size:18px;">
+                    {name}
+                  </div>
+
+                  {show?.description ? (
+                    <div class="story-dek">{show.description}</div>
+                  ) : null}
+
+                  <div style="margin-top:10px; font-weight:850; color: var(--accent2);">
+                    {slug ? "View show →" : "Missing slug →"}
+                  </div>
+                </div>
+              </Wrapper>
+            );
+          })}
+        </div>
+      </>
+    ) : null}
+
+    <style>
+      .shows-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+      @media (max-width: 920px) {
+        .shows-grid { grid-template-columns: 1fr; }
+      }
+      @media (min-width: 921px) and (max-width: 1100px) {
+        .shows-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+      .showcard {
+        padding: 0;
+        overflow: hidden;
+        text-decoration: none;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: #fff;
+        box-shadow: var(--shadow);
+        transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+        display: block;
+      }
+      .showcard:hover {
+        transform: translateY(-1px);
+        border-color: color-mix(in srgb, var(--accent) 18%, var(--line2));
+        box-shadow: 0 16px 38px rgba(2, 6, 23, .08);
+      }
+      .showcard-disabled {
+        opacity: .72;
+        cursor: not-allowed;
+      }
+      .showcard-disabled:hover {
+        transform: none;
+        box-shadow: var(--shadow);
+        border-color: var(--line);
+      }
+    </style>
+  </div>
+</BaseLayout>

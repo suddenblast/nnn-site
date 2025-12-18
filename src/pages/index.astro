@@ -1,16 +1,204 @@
 ---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { strapiGet } from "../lib/strapi";
+import HeroStory from "../components/HeroStory.astro";
+import StoryCard from "../components/StoryCard.astro";
 
+/* -----------------------------
+   STORIES
+----------------------------- */
+type Story = {
+  slug: string;
+  headline: string;
+  dek?: string;
+  airDate?: string;
+  featured?: boolean;
+};
+
+type StoriesResponse = { data: Story[] };
+
+const { data } = await strapiGet<StoriesResponse>(
+  "/api/stories?sort=airDate:desc&pagination[pageSize]=50"
+);
+
+const stories = data.filter((s) => s.slug);
+const hero = stories.find((s) => s.featured) ?? stories[0] ?? null;
+const latest = hero
+  ? stories.filter((s) => s.slug !== hero.slug).slice(0, 12)
+  : stories.slice(0, 12);
+
+/* -----------------------------
+   WEATHER (NWS)
+----------------------------- */
+const LAT = 42.0451;
+const LON = -87.6877;
+
+const pointRes = await fetch(`https://api.weather.gov/points/${LAT},${LON}`, {
+  headers: { "User-Agent": "NNN Weather (nnn@northwestern.edu)" },
+});
+const pointData = await pointRes.json();
+
+const forecastUrl = pointData?.properties?.forecast;
+
+let periods: any[] = [];
+if (forecastUrl) {
+  const forecastRes = await fetch(forecastUrl, {
+    headers: { "User-Agent": "NNN Weather (nnn@northwestern.edu)" },
+  });
+  const forecastData = await forecastRes.json();
+  periods = forecastData?.properties?.periods ?? [];
+}
+
+const emojiFor = (text = "") => {
+  const t = text.toLowerCase();
+  if (t.includes("thunder") || t.includes("storm")) return "⛈️";
+  if (t.includes("snow") || t.includes("blizzard") || t.includes("flurr")) return "❄️";
+  if (t.includes("rain") || t.includes("shower") || t.includes("drizzle")) return "🌧️";
+  if (t.includes("fog") || t.includes("haze") || t.includes("smoke")) return "🌫️";
+  if (t.includes("wind")) return "💨";
+  if (t.includes("sun") || t.includes("clear")) return "☀️";
+  if (t.includes("partly")) return "🌤️";
+  if (t.includes("cloud")) return "☁️";
+  return "🌡️";
+};
+
+// Current-ish = first period
+const now = periods[0] ?? null;
+
+// 10 daytime periods (label says 8-day)
+const tenDay = periods.filter((p) => p?.isDaytime).slice(0, 10);
+
+/* -----------------------------
+   SOCIALS
+----------------------------- */
+const socials = [
+  { label: "Instagram", emoji: "📸", href: "https://www.instagram.com/nnn_news/" },
+  { label: "X (Twitter)", emoji: "𝕏", href: "https://x.com/nnn_news" },
+  { label: "TikTok", emoji: "🎵", href: "https://www.tiktok.com/@northwesternnewsnetwork" },
+  { label: "YouTube", emoji: "▶️", href: "https://www.youtube.com/@northwesternnewsnetwork" },
+  { label: "Facebook", emoji: "📘", href: "https://www.facebook.com/nnntv" },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="NNN">
+  <div class="grid">
+    <div style="display:grid; gap:14px;">
+      {hero && <HeroStory story={hero} />}
+
+      <section>
+        <div class="section-title">Latest</div>
+        <div class="list">
+          {latest.map((s) => <StoryCard story={s} />)}
+        </div>
+      </section>
+    </div>
+
+    <aside style="display:grid; gap:14px;">
+      <!-- Weather Card -->
+      <section class="card">
+        <div class="card-pad">
+          <div class="section-title">Evanston Weather</div>
+
+          {now ? (
+            <>
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;">
+                <div style="font-weight:900; font-size:15px;">
+                  {emojiFor(now.shortForecast)} {now.shortForecast}
+                </div>
+                <div style="font-weight:950; font-size:18px;">
+                  {now.temperature}°
+                </div>
+              </div>
+
+              <div style="margin-top:10px; border-top:1px solid var(--line); padding-top:10px;">
+                <div
+                  style="
+                    font-weight:900;
+                    font-size:12px;
+                    letter-spacing:.02em;
+                    text-transform:uppercase;
+                    color:var(--muted2);
+                  "
+                >
+                  8-Day Forecast
+                </div>
+
+                <div style="margin-top:8px; display:grid; gap:8px;">
+                  {tenDay.map((p) => (
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                      <div style="min-width:84px; font-weight:850;">
+                        {p.name}
+                      </div>
+
+                      <div
+                        style="
+                          flex:1;
+                          color:var(--muted);
+                          font-size:13px;
+                          display:-webkit-box;
+                          -webkit-line-clamp: 1;
+                          -webkit-box-orient: vertical;
+                          overflow:hidden;
+                        "
+                      >
+                        {emojiFor(p.shortForecast)} {p.shortForecast}
+                      </div>
+
+                      <div style="font-weight:900;">
+                        {p.temperature}°
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div style="color:var(--muted); font-size:14px;">
+              Weather unavailable
+            </div>
+          )}
+
+          <div style="margin-top:10px; font-size:12px; color:var(--muted2);">
+            Source: National Weather Service
+          </div>
+        </div>
+      </section>
+
+      <!-- Follow Us Card -->
+      <section class="card">
+        <div class="card-pad">
+          <div class="section-title">Follow NNN</div>
+          <div style="color:var(--muted); font-size:14px; margin-top:2px;">
+            Get the latest clips + updates.
+          </div>
+
+          <div style="margin-top:10px; display:grid; gap:8px;">
+            {socials.map((s) => (
+              <a
+                class="storycard"
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style="padding:10px 12px; align-items:center;"
+              >
+                <div style="display:flex; align-items:center; gap:10px; width:100%;">
+                  <div style="font-size:18px; line-height:1;">
+                    {s.emoji}
+                  </div>
+
+                  <div style="flex:1;">
+                    <div style="font-weight:900;">
+                      {s.label}
+                    </div>
+                  </div>
+
+                  <div style="color:var(--accent2); font-weight:850;">→</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</BaseLayout>

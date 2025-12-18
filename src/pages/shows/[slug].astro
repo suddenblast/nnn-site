@@ -1,0 +1,235 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { strapiGet } from "../../lib/strapi";
+
+export const prerender = false;
+
+/* Convert video URLs → embed URLs */
+const toEmbedUrl = (url) => {
+  if (!url) return null;
+
+  // YouTube
+  if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    const id =
+      url.split("v=")[1]?.split("&")[0] ??
+      url.split("youtu.be/")[1]?.split("?")[0];
+    return id ? `https://www.youtube.com/embed/${id}` : null;
+  }
+
+  // Vimeo
+  if (url.includes("vimeo.com")) {
+    const id = url.split("vimeo.com/")[1]?.split("?")[0];
+    return id ? `https://player.vimeo.com/video/${id}` : null;
+  }
+
+  return null;
+};
+
+// Normalizer for Strapi v4 + v5-ish shapes
+const norm = (item) => (item?.attributes ? { ...item.attributes, id: item.id } : item);
+
+/* Page param */
+const { slug } = Astro.params;
+
+/* -----------------------------
+   1) Fetch show (+ logo + EP)
+----------------------------- */
+const showRes = await strapiGet(
+  `/api/shows` +
+    `?filters[slug][$eq]=${encodeURIComponent(slug)}` +
+    `&populate[0]=logo` +
+    `&populate[1]=ep`
+);
+
+const showRaw = showRes?.data?.[0];
+if (!showRaw) return Astro.redirect("/shows");
+
+const show = norm(showRaw);
+const showId = show?.id ?? null;
+const showName = show?.name ?? "Untitled show";
+
+// Logo (media) normalization
+const cover =
+  show?.logo?.url ??
+  show?.logo?.data?.attributes?.url ??
+  show?.logo?.data?.url;
+
+const coverAlt =
+  show?.logo?.alternativeText ??
+  show?.logo?.data?.attributes?.alternativeText ??
+  showName;
+
+// Full broadcast embed
+const heroEmbed = toEmbedUrl(show.heroVideoUrl);
+
+/* -----------------------------
+   EP normalization
+----------------------------- */
+const relToArray = (rel) => {
+  if (!rel) return [];
+  if (Array.isArray(rel)) return rel;
+  if (rel?.data) return Array.isArray(rel.data) ? rel.data : [rel.data];
+  return [rel];
+};
+
+const getName = (p) => p?.name ?? p?.attributes?.name ?? "";
+
+const epList = relToArray(show?.ep)
+  .map((p) => (p?.attributes ? p.attributes : p))
+  .filter(Boolean);
+
+const epText = epList
+  .map((p) => getName(p))
+  .filter(Boolean)
+  .join(", ");
+
+/* -----------------------------
+   2) Fetch stories belonging to this show
+----------------------------- */
+let stories = [];
+
+if (showId) {
+  const base =
+    `/api/stories` +
+    `?sort=publishedAt:desc` +
+    `&pagination[pageSize]=200` +
+    `&fields[0]=headline&fields[1]=slug&fields[2]=publishedAt` +
+    `&populate[0]=staff`;
+
+  const urlShow =
+    base +
+    `&populate[1]=show` +
+    `&filters[show][id][$eq]=${encodeURIComponent(String(showId))}`;
+
+  const urlShows =
+    base +
+    `&populate[1]=shows` +
+    `&filters[shows][id][$eq]=${encodeURIComponent(String(showId))}`;
+
+  try {
+    const storiesRes = await strapiGet(urlShow);
+    stories = (storiesRes?.data ?? []).map(norm);
+  } catch (e) {
+    const storiesRes2 = await strapiGet(urlShows);
+    stories = (storiesRes2?.data ?? []).map(norm);
+  }
+}
+
+const storyHref = (s) => `/stories/${s.slug}`;
+
+/* -----------------------------
+   BYLINES (no date)
+----------------------------- */
+const staffToList = (staff) => {
+  if (!staff) return [];
+  if (Array.isArray(staff)) return staff;
+  if (staff?.data) return Array.isArray(staff.data) ? staff.data : [staff.data];
+  return [staff];
+};
+
+const staffByline = (staff) => {
+  const list = staffToList(staff)
+    .map((x) => (x?.attributes ? x.attributes : x))
+    .filter(Boolean)
+    .map((p) => {
+      const name = p?.name ?? "";
+      const role = p?.role ?? "";
+      if (name && role) return `${name} • ${role}`;
+      return name || role || "";
+    })
+    .filter(Boolean);
+
+  if (!list.length) return "";
+  return `By ${list.join(", ")}`;
+};
+---
+
+<BaseLayout title={`${showName} · NNN`}>
+  <article class="card">
+    {cover ? (
+      <div class="hero-media">
+        <img src={cover} alt={coverAlt} loading="eager" />
+      </div>
+    ) : null}
+
+    <div class="card-pad">
+      <div class="kicker">
+        <span class="pill">Show</span>
+        <span>{slug}</span>
+      </div>
+
+      <h1 class="h1">{showName}</h1>
+
+      {epText ? (
+        <div class="story-meta" style="margin-top:6px;">
+          EP: {epText}
+        </div>
+      ) : null}
+
+      {show?.description ? <p class="dek">{show.description}</p> : null}
+
+      <div style="margin-top:12px;">
+        <a class="btn" href="/shows">← All shows</a>
+      </div>
+    </div>
+  </article>
+
+  {heroEmbed ? (
+    <section class="card card-pad" style="margin-top:16px;">
+      <div class="section-title">Full Broadcast</div>
+
+      <div class="embed">
+        <div class="embed-inner">
+          <iframe
+            src={heroEmbed}
+            title={`${showName} – Full Broadcast`}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          />
+        </div>
+      </div>
+    </section>
+  ) : null}
+
+  <section class="card card-pad" style="margin-top:16px;">
+    <div class="section-title">Stories</div>
+
+    {stories.length === 0 ? (
+      <p class="dek" style="margin:0;">No stories linked to this show yet.</p>
+    ) : (
+      <div class="list">
+        {stories.map((s) => {
+          const headline = s.headline ?? "Untitled story";
+
+          if (!s.slug) {
+            return (
+              <div class="storycard" style="align-items:center;">
+                <div style="flex:1;">
+                  <div class="story-title">{headline}</div>
+                  <div class="story-meta">Missing slug</div>
+                </div>
+              </div>
+            );
+          }
+
+          const by = staffByline(s.staff);
+
+          return (
+            <a class="storycard" href={storyHref(s)}>
+              <div style="flex:1;">
+                <div class="story-title">{headline}</div>
+
+                {by ? <div class="story-meta">{by}</div> : <div class="story-meta">By NNN Staff</div>}
+
+                <div style="margin-top:8px; font-weight:850; color: var(--accent2);">
+                  Read story →
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    )}
+  </section>
+</BaseLayout>

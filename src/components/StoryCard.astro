@@ -1,0 +1,43 @@
+---
+import { getYouTubeThumb } from "../lib/video";
+
+type Props = {
+  story: {
+    slug: string;
+    headline: string;
+    dek?: string;
+    airDate?: string;
+    videoUrl?: string;
+  };
+};
+
+const { story } = Astro.props as Props;
+const thumb = getYouTubeThumb(story.videoUrl, "hq");
+
+function formatDate(d?: string) {
+  if (!d) return "";
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+---
+
+<a class="storycard" href={`/stories/${story.slug}/`}>
+  {thumb && (
+    <div class="thumb" aria-hidden="true">
+      <img src={thumb} alt="" loading="lazy" />
+    </div>
+  )}
+
+  <div style="flex:1; min-width:0;">
+    <div class="story-meta">
+      {story.airDate ? formatDate(story.airDate) : ""}
+      {story.videoUrl ? " • Video" : ""}
+    </div>
+
+    <div class="story-title">{story.headline}</div>
+
+    {story.dek && <div class="story-dek">{story.dek}</div>}
+  </div>
+</a>

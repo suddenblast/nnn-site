@@ -1,0 +1,527 @@
+:root{
+  /* Northwestern brand tokens (primary) */
+  --nu-purple:#4E2A84;          /* Purple 100 */
+  --nu-purple-dark:#401F68;     /* Purple 120-ish */
+  --nu-purple-soft:#E4E0EE;     /* Purple 10 */
+  --nu-black:#000000;
+
+  /* Secondary palette (use sparingly; good for tags/badges) */
+  --nu-blue:#5091CD;
+  --nu-red:#EF553F;
+  --nu-gold:#FFC520;
+  --nu-green:#58B947;
+  --nu-teal:#7FCECD;
+
+  /* Site tokens */
+  --bg:#ffffff;
+  --text:#0f172a;         /* slate-900 */
+  --muted:#475569;        /* slate-600 */
+  --muted2:#64748b;       /* slate-500 */
+  --line:#e2e8f0;         /* slate-200 */
+  --line2:#cbd5e1;        /* slate-300 */
+  --card:#ffffff;
+  --soft:#f8fafc;         /* slate-50 */
+
+  /* Accent now Northwestern purple */
+  --accent:var(--nu-purple);
+  --accent2:var(--nu-purple-dark);
+
+  --radius:14px;
+  --shadow:0 10px 30px rgba(2,6,23,.06);
+  --container:1120px;
+
+  /* Focus ring */
+  --focus: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+html{ color-scheme: light; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+a{ color:inherit; text-decoration:none; }
+a:hover{ color:var(--accent2); }
+
+/* A subtle “newsroom” touch: underline on hover only for inline links */
+.prose a{
+  color:var(--accent2);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent2) 40%, transparent);
+  text-underline-offset: 2px;
+}
+.prose a:hover{
+  text-decoration-color: var(--accent2);
+}
+
+:focus-visible{
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.container{
+  max-width:var(--container);
+  margin:0 auto;
+  padding:0 20px;
+}
+
+/* ---------- Header ---------- */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  backdrop-filter:saturate(180%) blur(10px);
+  background:rgba(255,255,255,.92);
+  border-bottom:1px solid var(--line);
+}
+
+.nav{
+  display:flex;
+  align-items:center;
+  justify-content:center; /* MOBILE: centered logo */
+  gap:16px;
+  height:78px;            /* MOBILE: a bit taller for the stacked mark */
+}
+
+@media (min-width: 768px){
+  .nav{
+    justify-content:space-between; /* DESKTOP: logo left, nav right */
+    height:72px;                  /* DESKTOP: taller to fit bigger logo */
+  }
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+}
+
+/* Mobile: hide links so centering stays clean */
+.navlinks{
+  display:none;
+}
+
+/* Desktop: show links */
+@media (min-width: 768px){
+  .navlinks{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    font-weight:650;
+    color:var(--muted);
+  }
+
+  .navlinks a{
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid transparent;
+  }
+  .navlinks a:hover{
+    background:var(--soft);
+    color:var(--text);
+    border-color: var(--line);
+  }
+
+  /* Optional: active nav hook (add class="active" in Astro) */
+  .navlinks a.active{
+    color:var(--accent2);
+    background: color-mix(in srgb, var(--nu-purple-soft) 55%, white);
+    border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
+  }
+}
+
+/* Logo sizing: stacked on mobile, horizontal on desktop (via <picture>) */
+.site-logo{
+  height:70px;     /* MOBILE: bigger stacked logo */
+  width:auto;
+  display:block;
+}
+
+@media (min-width: 768px){
+  .site-logo{
+    height:46px;   /* DESKTOP: bigger horizontal logo */
+  }
+}
+
+@media (min-width: 1024px){
+  .site-logo{
+    height:52px;   /* LARGE DESKTOP: extra presence */
+  }
+}
+
+/* ---------- Page layout ---------- */
+main{ padding:22px 0 48px; }
+
+.grid{
+  display:grid;
+  grid-template-columns: 1.35fr .65fr;
+  gap:18px;
+}
+
+@media (max-width: 920px){
+  .grid{ grid-template-columns: 1fr; }
+}
+
+/* ---------- Cards & UI ---------- */
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.card-pad{ padding:18px; }
+
+.kicker{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  font-weight:750;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  color:var(--muted2);
+}
+
+.pill{
+  border:1px solid var(--line);
+  background:var(--soft);
+  padding:3px 8px;
+  border-radius:999px;
+}
+
+.h1{
+  margin:10px 0 8px;
+  font-size:40px;
+  line-height:1.08;
+  letter-spacing:-0.03em;
+}
+
+@media (max-width: 920px){
+  .h1{ font-size:34px; }
+}
+
+.dek{
+  margin:0 0 12px;
+  font-size:18px;
+  color:var(--muted);
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line2);
+  background:#fff;
+  font-weight:750;
+}
+.btn:hover{
+  border-color:var(--accent);
+  box-shadow:0 10px 30px rgba(78,42,132,.12); /* NU purple glow */
+}
+
+.section-title{
+  margin:0 0 10px;
+  font-size:14px;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  color:var(--muted2);
+  font-weight:850;
+}
+
+.list{
+  display:grid;
+  gap:10px;
+}
+
+/* ---------- Story cards ---------- */
+.storycard{
+  display:flex;
+  gap:14px;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:#fff;
+}
+.storycard:hover{
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line2));
+  box-shadow:0 16px 38px rgba(2,6,23,.06);
+}
+
+.story-meta{
+  font-size:12px;
+  color:var(--muted2);
+  font-weight:650;
+}
+.story-title{
+  margin:2px 0 0;
+  font-size:16px;
+  line-height:1.25;
+  font-weight:900;
+  letter-spacing:-0.015em;
+}
+.story-dek{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.4;
+}
+
+/* Thumbnails in cards */
+.thumb{
+  width:110px;
+  aspect-ratio:16 / 9;
+  border-radius:12px;
+  background:var(--soft);
+  border:1px solid var(--line);
+  overflow:hidden;
+  flex:0 0 auto;
+}
+.thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* Hero thumbnail module */
+.hero-media{
+  border-bottom:1px solid var(--line);
+  border-top-left-radius:var(--radius);
+  border-top-right-radius:var(--radius);
+  overflow:hidden;
+  background:var(--soft);
+}
+.hero-media img{
+  width:100%;
+  height:auto;
+  display:block;
+  aspect-ratio:16 / 9;
+  object-fit:cover;
+}
+.playbadge{
+  position:absolute;
+  inset:auto auto 14px 14px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  border-radius:999px;
+  background:rgba(15,23,42,.85);
+  color:#fff;
+  font-weight:800;
+  font-size:12px;
+  letter-spacing:.02em;
+}
+
+/* Responsive video embed */
+.embed{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:#000;
+  box-shadow:var(--shadow);
+  margin:14px 0 18px;
+}
+.embed-inner{
+  position:relative;
+  width:100%;
+  padding-top:56.25%; /* 16:9 */
+}
+.embed-inner iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+}
+
+/* ---------- Article typography ---------- */
+.prose{
+  max-width:760px;
+  margin:0 auto;
+}
+.prose h1{
+  font-size:40px;
+  line-height:1.08;
+  letter-spacing:-0.03em;
+  margin:10px 0 10px;
+}
+.prose p{
+  margin:0 0 14px;
+  color:var(--text);
+  font-size:17px;
+}
+.prose .dek{
+  font-size:19px;
+}
+
+/* ---------- Footer ---------- */
+.footer{
+  border-top:1px solid var(--line);
+  padding:28px 0 40px;
+  color:var(--muted2);
+  font-size:13px;
+}
+
+/* ---------- Mobile hamburger + drawer ---------- */
+
+/* Show hamburger on mobile only */
+.hamburger{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  box-shadow:0 10px 30px rgba(2,6,23,.06);
+  cursor:pointer;
+}
+
+.hamburger:focus-visible{
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.hamburger-lines{
+  width:18px;
+  height:12px;
+  position:relative;
+  display:block;
+}
+
+.hamburger-lines::before,
+.hamburger-lines::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  height:2px;
+  background:var(--text);
+  border-radius:999px;
+  transition: transform .18s ease, top .18s ease, opacity .18s ease;
+}
+
+.hamburger-lines::before{ top:2px; }
+.hamburger-lines::after{ top:8px; }
+
+/* Animate to X when open */
+.menu-open .hamburger-lines::before{
+  top:5px;
+  transform: rotate(45deg);
+}
+.menu-open .hamburger-lines::after{
+  top:5px;
+  transform: rotate(-45deg);
+}
+
+/* Mobile menu drawer */
+.mobile-menu{
+  border-top:1px solid var(--line);
+  background:rgba(255,255,255,.92);
+  backdrop-filter: blur(10px);
+}
+
+.mobile-menu-inner{
+  padding:14px 0 18px;
+  display:grid;
+  gap:12px;
+}
+
+.mobile-links{
+  display:grid;
+  gap:8px;
+}
+
+.mobile-links a{
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fff;
+  font-weight:850;
+  letter-spacing:-0.01em;
+}
+
+.mobile-links a:hover{
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line2));
+  box-shadow:0 16px 38px rgba(2,6,23,.06);
+}
+
+.mobile-meta{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:var(--soft);
+}
+
+.mobile-kicker{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+  color:var(--muted2);
+}
+
+.mobile-sub{
+  margin-top:6px;
+  font-size:14px;
+  color:var(--muted);
+}
+
+/* Desktop: no hamburger, no drawer */
+@media (min-width: 768px){
+  .hamburger{ display:none; }
+  .mobile-menu{ display:none; }
+}
+.mobile-links a.active{
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line2));
+  background: color-mix(in srgb, var(--nu-purple-soft) 55%, white);
+}
+/* Subtle gray hover for logo (safe for <img>) */
+.brand{
+  border-radius: 12px; /* matches your system */
+  transition: background-color 160ms ease;
+}
+
+.brand img{
+  transition: filter 160ms ease, opacity 160ms ease;
+}
+
+.brand:hover{
+  background: var(--soft); /* light gray surface */
+}
+
+.brand:hover img{
+  filter: brightness(0.85);
+  opacity: 0.9;
+}
+/* Staff directory headshots */
+.staff-headshot {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--card2);
+}
+
+/* Empty fallback */
+.staff-headshot--empty {
+  border: 1px solid var(--line);
+}
+
+/* Slightly smaller on mobile */
+@media (max-width: 640px) {
+  .staff-headshot {
+    width: 64px;
+    height: 64px;
+  }
+}
+

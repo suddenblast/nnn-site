@@ -1,0 +1,68 @@
+/* src/styles/theme.css */
+
+/* Northwestern Purple scale (derived from official RGB values on the brand page) */
+:root {
+  --nu-purple-160: #1D0235;
+  --nu-purple-150: #260841;
+  --nu-purple-140: #30104E;
+  --nu-purple-130: #38175A;
+  --nu-purple-120: #401F68;
+  --nu-purple-110: #482476;
+  --nu-purple-100: #4E2A84; /* official HEX */
+  --nu-purple-90:  #5B3B8C;
+  --nu-purple-80:  #684C96;
+  --nu-purple-70:  #765DA0;
+  --nu-purple-60:  #836EAA;
+  --nu-purple-50:  #9380B6;
+  --nu-purple-40:  #A495C3;
+  --nu-purple-30:  #B6ACD1;
+  --nu-purple-20:  #CCC4DF;
+  --nu-purple-10:  #E4E0EE;
+
+  /* Secondary palette (use rarely / sparingly) */
+  --nu-sec-green:  #58B947;
+  --nu-sec-teal:   #7FCECD;
+  --nu-sec-blue:   #5091CD;
+  --nu-sec-yellow: #EDE93B;
+  --nu-sec-gold:   #FFC520;
+  --nu-sec-red:    #EF553F;
+
+  --nu-sec-dkgreen:#008656;
+  --nu-sec-dkteal: #007FA4;
+  --nu-sec-dkblue: #0D2D6C;
+  --nu-sec-dkyell: #D9C826;
+  --nu-sec-dkgold: #CA7C1B;
+
+  /* NNN site tokens (LIGHT-first; NU recommends white be predominant) */
+  --bg: #ffffff;
+  --surface: #f6f7fb;
+  --text: #0a1020;
+  --muted: #49536a;
+  --border: rgba(10,16,32,0.14);
+
+  --brand: var(--nu-purple-100);
+  --brand-strong: var(--nu-purple-120);
+  --brand-soft: var(--nu-purple-20);
+
+  --focus: color-mix(in srgb, var(--brand) 55%, transparent);
+
+  --shadow: 0 12px 30px rgba(10,16,32,0.12);
+}
+
+/* Optional dark theme */
+:root[data-theme="dark"]{
+  --bg: #0b0f1a;
+  --surface: #11182a;
+  --text: #eef2ff;
+  --muted: #a9b4d0;
+  --border: rgba(255,255,255,0.12);
+
+  --brand: var(--nu-purple-60);
+  --brand-strong: var(--nu-purple-40);
+  --brand-soft: color-mix(in srgb, var(--nu-purple-100) 18%, transparent);
+
+  --focus: color-mix(in srgb, var(--nu-purple-60) 60%, transparent);
+
+  --shadow: 0 12px 30px rgba(0,0,0,0.35);
+}
+

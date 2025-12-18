@@ -1,0 +1,54 @@
+---
+import { getYouTubeThumb, getYouTubeId } from "../lib/video";
+
+type Props = {
+  story: {
+    slug: string;
+    headline: string;
+    dek?: string;
+    airDate?: string;
+    videoUrl?: string;
+  };
+};
+
+const { story } = Astro.props as Props;
+
+const thumb = getYouTubeThumb(story.videoUrl, "hq");
+const ytId = getYouTubeId(story.videoUrl);
+
+function formatDate(d?: string) {
+  if (!d) return "";
+  return new Date(d + "T00:00:00").toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+---
+
+<section class="card">
+  {thumb && (
+    <a class="hero-media" href={`/stories/${story.slug}/`} style="display:block; position:relative;">
+      <img src={thumb} alt="" loading="lazy" />
+      <span class="playbadge" aria-hidden="true">
+        ▶ Watch / Read
+      </span>
+    </a>
+  )}
+
+  <div class="card-pad">
+    <div class="kicker">
+      <span class="pill">Featured</span>
+      {story.airDate && <span>{formatDate(story.airDate)}</span>}
+      {story.videoUrl && <span class="pill">Video</span>}
+    </div>
+
+    <h1 class="h1">{story.headline}</h1>
+
+    {story.dek && <p class="dek">{story.dek}</p>}
+
+    <a class="btn" href={`/stories/${story.slug}/`}>
+      Read story <span aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>

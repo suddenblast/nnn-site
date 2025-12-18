@@ -1,0 +1,147 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { strapiGet } from "../../lib/strapi";
+import {
+  norm,
+  imageUrl,
+  imageAlt,
+  roleText,
+  plainText,
+} from "../../lib/normalize";
+
+type Person = {
+  slug?: string;
+  name?: string;
+  role?: any;
+  bio?: any;
+  headshot?: any;
+};
+
+type TeamResponse = { data: any[] };
+
+let team: Person[] = [];
+let note = "";
+
+// Change if your Strapi origin differs
+const STRAPI_ORIGIN =
+  import.meta.env.PUBLIC_STRAPI_URL ||
+  import.meta.env.STRAPI_URL ||
+  "http://localhost:1337";
+
+// Convert relative upload URLs → absolute
+const absolutize = (src: string | null) => {
+  if (!src) return null;
+  if (src.startsWith("http")) return src;
+  if (src.startsWith("/")) return `${STRAPI_ORIGIN}${src}`;
+  return src;
+};
+
+// Endpoints to try (populate headshot)
+const endpoints = [
+  "/api/staff?sort=name:asc&pagination[pageSize]=200&populate=headshot",
+  "/api/staffs?sort=name:asc&pagination[pageSize]=200&populate=headshot",
+  "/api/team?sort=name:asc&pagination[pageSize]=200&populate=headshot",
+];
+
+for (const path of endpoints) {
+  try {
+    const res = await strapiGet<TeamResponse>(path);
+    const raw = Array.isArray(res?.data) ? res.data : [];
+    if (raw.length) {
+      team = raw.map(norm);
+      break;
+    }
+  } catch {
+    // keep trying
+  }
+}
+
+if (!team.length) {
+  note =
+    "Team entries not found yet. In Strapi, create and publish people in your Staff collection.";
+}
+---
+
+<BaseLayout title="Team • NNN">
+  <div
+    style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:6px 0 14px;"
+  >
+    <div>
+      <div class="section-title">Team</div>
+      <div style="color:var(--muted); font-weight:650;">
+        Meet the people behind NNN.
+      </div>
+    </div>
+    <a class="btn" href="/">Back to Home →</a>
+  </div>
+
+  {note && (
+    <section class="card" style="margin-bottom:14px;">
+      <div class="card-pad" style="color:var(--muted); font-size:14px;">
+        {note}
+      </div>
+    </section>
+  )}
+
+  <section class="list">
+    {team.length ? (
+      team.map((p) => {
+        const role = roleText(p.role);
+        const bio = plainText(p.bio);
+        const src = absolutize(imageUrl(p.headshot));
+        const alt = imageAlt(p.headshot, p.name ?? "Staff headshot");
+
+        return (
+          <a
+            class="storycard"
+            href={p.slug ? `/team/${p.slug}/` : "#"}
+            aria-disabled={!p.slug}
+          >
+            {/* LEFT: text */}
+            <div style="flex:1; min-width:0;">
+              <div class="story-title">{p.name ?? "Unnamed"}</div>
+
+              {role && <div class="story-meta">{role}</div>}
+
+              {bio && (
+                <div
+                  class="story-dek"
+                  style="
+                    margin-top:6px;
+                    display:-webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow:hidden;
+                  "
+                >
+                  {bio}
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT: headshot */}
+            {src ? (
+              <img
+                src={src}
+                alt={alt}
+                loading="lazy"
+                class="staff-headshot"
+              />
+            ) : (
+              <div
+                class="staff-headshot staff-headshot--empty"
+                aria-hidden="true"
+              />
+            )}
+          </a>
+        );
+      })
+    ) : (
+      <section class="card">
+        <div class="card-pad" style="color:var(--muted); font-size:14px;">
+          No team members to display yet.
+        </div>
+      </section>
+    )}
+  </section>
+</BaseLayout>

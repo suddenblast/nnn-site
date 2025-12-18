@@ -1,0 +1,171 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { strapiGet } from "../../lib/strapi";
+
+const { slug } = Astro.params;
+
+const norm = (item) =>
+  item?.attributes ? { ...item.attributes, id: item.id } : item;
+
+const toEmbedUrl = (url) => {
+  if (!url) return null;
+
+  if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    const id =
+      url.split("v=")[1]?.split("&")[0] ??
+      url.split("youtu.be/")[1]?.split("?")[0];
+    return id ? `https://www.youtube.com/embed/${id}` : null;
+  }
+
+  if (url.includes("vimeo.com")) {
+    const id = url.split("vimeo.com/")[1]?.split("?")[0];
+    return id ? `https://player.vimeo.com/video/${id}` : null;
+  }
+
+  return null;
+};
+
+/* -----------------------------
+   Fetch story (SSR-safe)
+----------------------------- */
+const storyRes = await strapiGet(
+  `/api/stories` +
+    `?filters[slug][$eq]=${encodeURIComponent(slug)}` +
+    `&populate[0]=staff` +
+    `&populate[1]=thumbnail`
+);
+
+const storyRaw = storyRes?.data?.[0];
+if (!storyRaw) return Astro.redirect("/stories");
+
+const story = norm(storyRaw);
+
+const headline = story?.headline ?? "Untitled story";
+const dek = story?.dek ?? "";
+
+/* -----------------------------
+   Staff byline
+----------------------------- */
+const staffList = story?.staff?.data
+  ? Array.isArray(story.staff.data)
+    ? story.staff.data.map(norm)
+    : [norm(story.staff.data)]
+  : Array.isArray(story?.staff)
+  ? story.staff.map(norm)
+  : story?.staff
+  ? [norm(story.staff)]
+  : [];
+
+const byline =
+  staffList.length
+    ? `By ${staffList
+        .map((p) => {
+          const name = p?.name ?? "";
+          const role = p?.role ?? "";
+          if (name && role) return `${name} • ${role}`;
+          return name || role || "";
+        })
+        .filter(Boolean)
+        .join(", ")}`
+    : "By NNN Staff";
+
+/* -----------------------------
+   Media
+----------------------------- */
+const cover =
+  story?.coverImage?.url ??
+  story?.coverImage?.data?.attributes?.url ??
+  story?.coverImage?.data?.url ??
+  null;
+
+const coverAlt =
+  story?.coverImage?.alternativeText ??
+  story?.coverImage?.data?.attributes?.alternativeText ??
+  headline;
+
+const embed = toEmbedUrl(
+  story?.videoUrl ?? story?.videoURL ?? story?.video ?? null
+);
+
+/* -----------------------------
+   Rich text body (blocks or string)
+----------------------------- */
+const body = story?.articleBody ?? story?.body ?? null;
+---
+
+<BaseLayout title={`${headline} · NNN`}>
+  <article class="card">
+    {cover && (
+      <div class="hero-media">
+        <img src={cover} alt={coverAlt} loading="eager" />
+      </div>
+    )}
+
+    <div class="card-pad">
+      <div class="kicker">
+        <span class="pill">Story</span>
+        <span>{slug}</span>
+      </div>
+
+      <h1 class="h1">{headline}</h1>
+
+      <div class="story-meta" style="margin-top:6px;">
+        {byline}
+      </div>
+
+      {dek && <p class="dek">{dek}</p>}
+
+      <div style="margin-top:12px;">
+        <a class="btn" href="/stories">← All stories</a>
+      </div>
+    </div>
+  </article>
+
+  {embed && (
+    <section class="card card-pad" style="margin-top:16px;">
+      <div class="section-title">Video</div>
+      <div class="embed">
+        <div class="embed-inner">
+          <iframe
+            src={embed}
+            title={`${headline} – Video`}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          />
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="card card-pad" style="margin-top:16px;">
+    <div class="section-title">Story</div>
+
+    {typeof body === "string" ? (
+      <p class="prose">{body}</p>
+    ) : Array.isArray(body) ? (
+      <div class="prose">
+        {body.map((block) => {
+          const children = Array.isArray(block?.children)
+            ? block.children
+            : [];
+
+          const text = children.map((c) => c?.text ?? "").join("");
+          if (!text.trim()) return null;
+
+          if (block.type === "heading" || block.type === "h2") {
+            return <h2>{text}</h2>;
+          }
+
+          return <p>{text}</p>;
+        })}
+      </div>
+    ) : (
+      <p class="dek" style="margin:0;">
+        No story body yet.
+      </p>
+    )}
+  </section>
+</BaseLayout>

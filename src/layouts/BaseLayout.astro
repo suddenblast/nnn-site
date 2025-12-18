@@ -1,0 +1,143 @@
+---
+import "../styles/theme.css";
+import "../styles/global.css";
+
+const { title = "NNN" } = Astro.props;
+
+// Active nav
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/stories", label: "Stories" },
+  { href: "/shows", label: "Shows" },
+  { href: "/team", label: "Our Team" },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+    <slot name="head" />
+  </head>
+
+  <body>
+    <header class="topbar">
+      <div class="container nav">
+        <a class="brand" href="/" aria-label="Northwestern News Network">
+          <picture>
+            <!-- Desktop -->
+            <source media="(min-width: 768px)" srcset="/logo-horizontal.svg" />
+            <!-- Mobile fallback -->
+            <img class="site-logo" src="/logo-stacked.svg" alt="Northwestern News Network" />
+          </picture>
+        </a>
+
+        <!-- Desktop links -->
+        <nav class="navlinks" aria-label="Primary">
+          {navLinks.map((l) => (
+            <a
+              href={l.href}
+              class:list={[isActive(l.href) && "active"]}
+              aria-current={isActive(l.href) ? "page" : undefined}
+            >
+              {l.label}
+            </a>
+          ))}
+        </nav>
+
+        <!-- Mobile hamburger -->
+        <button
+          class="hamburger"
+          type="button"
+          aria-label="Open menu"
+          aria-controls="mobile-menu"
+          aria-expanded="false"
+          data-menu-button
+        >
+          <span class="hamburger-lines" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <!-- Mobile drawer -->
+      <div class="mobile-menu" id="mobile-menu" hidden data-mobile-menu>
+        <div class="container mobile-menu-inner">
+          <nav class="mobile-links" aria-label="Mobile Primary">
+            {navLinks.map((l) => (
+              <a
+                href={l.href}
+                class:list={[isActive(l.href) && "active"]}
+                aria-current={isActive(l.href) ? "page" : undefined}
+              >
+                {l.label}
+              </a>
+            ))}
+          </nav>
+
+          <div class="mobile-meta">
+            <div class="mobile-kicker">Northwestern News Network</div>
+            <div class="mobile-sub">Video-first student newsroom.</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <slot />
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div><strong>NNN</strong> · Northwestern News Network</div>
+          <div>© {new Date().getFullYear()}</div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Tiny vanilla JS menu controller -->
+    <script is:inline>
+      (() => {
+        const btn = document.querySelector("[data-menu-button]");
+        const menu = document.querySelector("[data-mobile-menu]");
+        if (!btn || !menu) return;
+
+        const setOpen = (open) => {
+          btn.setAttribute("aria-expanded", String(open));
+          btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+          menu.hidden = !open;
+          document.documentElement.classList.toggle("menu-open", open);
+          // optional: lock scroll
+          document.documentElement.style.overflow = open ? "hidden" : "";
+        };
+
+        setOpen(false);
+
+        btn.addEventListener("click", () => {
+          const open = btn.getAttribute("aria-expanded") === "true";
+          setOpen(!open);
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") setOpen(false);
+        });
+
+        menu.addEventListener("click", (e) => {
+          const t = e.target;
+          if (t && t.closest && t.closest("a")) setOpen(false);
+        });
+      })();
+    </script>
+  </body>
+</html>

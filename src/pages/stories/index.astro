@@ -1,0 +1,38 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { strapiGet } from "../../lib/strapi";
+import StoryCard from "../../components/StoryCard.astro";
+
+type Story = {
+  slug: string;
+  headline: string;
+  dek?: string;
+  airDate?: string;
+  featured?: boolean;
+  videoUrl?: string;
+};
+
+type StoriesResponse = { data: Story[] };
+
+const { data } = await strapiGet<StoriesResponse>(
+  "/api/stories?sort=airDate:desc&pagination[pageSize]=200"
+);
+
+const stories = data.filter((s) => s.slug);
+---
+
+<BaseLayout title="Stories • NNN">
+  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin: 6px 0 14px;">
+    <div>
+      <div class="section-title">Stories</div>
+      <div style="color:var(--muted); font-weight:650;">All recent stories from NNN.</div>
+    </div>
+    <a class="btn" href="/">Back to Home →</a>
+  </div>
+
+  <section>
+    <div class="list">
+      {stories.map((s) => <StoryCard story={s} />)}
+    </div>
+  </section>
+</BaseLayout>
