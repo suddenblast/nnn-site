@@ -1,13 +1,9 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { strapiGet } from "../../lib/strapi";
+import { norm } from "../../lib/normalize";
 
 export const prerender = false;
-
-interface StrapiItem {
-  id: number;
-  attributes?: Record<string, any>;
-}
 
 interface Show {
   id: number;
@@ -33,7 +29,6 @@ const res = await strapiGet("/api/shows", {
 const showsRaw = res?.data ?? [];
 
 // Normalize Strapi v4 + v5-ish shapes
-const norm = (item: StrapiItem): Show => (item?.attributes ? { ...item.attributes, id: item.id } : item as Show);
 const shows = showsRaw.map(norm);
 
 // Extract series safely

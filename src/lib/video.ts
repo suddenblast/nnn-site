@@ -30,3 +30,21 @@ export function getYouTubeThumb(url?: string, quality: "hq" | "mq" | "sd" = "hq"
   return `https://i.ytimg.com/vi/${id}/${file}`;
 }
 
+export function toEmbedUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+
+  // YouTube
+  if (url.includes("youtube.com") || url.includes("youtu.be")) {
+    const id = getYouTubeId(url);
+    return id ? `https://www.youtube.com/embed/${id}` : null;
+  }
+
+  // Vimeo
+  if (url.includes("vimeo.com")) {
+    const id = url.split("vimeo.com/")[1]?.split("?")[0];
+    return id ? `https://player.vimeo.com/video/${id}` : null;
+  }
+
+  return null;
+}
+

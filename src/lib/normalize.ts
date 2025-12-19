@@ -85,3 +85,29 @@ export const plainText = (value: any): string => {
 
   return "";
 };
+
+// Staff byline from staff relation
+export const staffByline = (staff: any): string => {
+  if (!staff) return "";
+  const list = staffToList(staff)
+    .map((x: any) => (x?.attributes ? x.attributes : x))
+    .filter(Boolean)
+    .map((p: any) => {
+      const name = p?.name ?? "";
+      const role = p?.role ?? "";
+      if (name && role) return `${name} • ${role}`;
+      return name || role || "";
+    })
+    .filter(Boolean);
+
+  if (!list.length) return "";
+  return `By ${list.join(", ")}`;
+};
+
+// Helper for staffToList
+const staffToList = (staff: any): any[] => {
+  if (!staff) return [];
+  if (Array.isArray(staff)) return staff;
+  if (staff?.data) return Array.isArray(staff.data) ? staff.data : [staff.data];
+  return [staff];
+};

@@ -1,23 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { strapiGet } from "../../lib/strapi";
+import { norm, staffByline } from "../../lib/normalize";
+import { toEmbedUrl } from "../../lib/video";
 
 export const prerender = false;
-
-interface StrapiItem {
-  id: number;
-  attributes?: Record<string, any>;
-}
-
-interface Show {
-  id: number;
-  name?: string;
-  slug?: string;
-  description?: string;
-  logo?: any;
-  ep?: any;
-  heroVideoUrl?: string;
-}
 
 interface Story {
   id: number;
@@ -26,36 +13,6 @@ interface Story {
   publishedAt?: string;
   staff?: any;
 }
-
-interface Staff {
-  id: number;
-  name?: string;
-  role?: string;
-}
-
-/* Convert video URLs → embed URLs */
-const toEmbedUrl = (url: string | null | undefined): string | null => {
-  if (!url) return null;
-
-  // YouTube
-  if (url.includes("youtube.com") || url.includes("youtu.be")) {
-    const id =
-      url.split("v=")[1]?.split("&")[0] ??
-      url.split("youtu.be/")[1]?.split("?")[0];
-    return id ? `https://www.youtube.com/embed/${id}` : null;
-  }
-
-  // Vimeo
-  if (url.includes("vimeo.com")) {
-    const id = url.split("vimeo.com/")[1]?.split("?")[0];
-    return id ? `https://player.vimeo.com/video/${id}` : null;
-  }
-
-  return null;
-};
-
-// Normalizer for Strapi v4 + v5-ish shapes
-const norm = (item: StrapiItem): Show => (item?.attributes ? { ...item.attributes, id: item.id } : item as Show);
 
 /* Page param */
 const { slug } = Astro.params;
@@ -150,28 +107,6 @@ const storyHref = (s: Story): string => `/stories/${s.slug}`;
 /* -----------------------------
    BYLINES (no date)
 ----------------------------- */
-const staffToList = (staff: any): any[] => {
-  if (!staff) return [];
-  if (Array.isArray(staff)) return staff;
-  if (staff?.data) return Array.isArray(staff.data) ? staff.data : [staff.data];
-  return [staff];
-};
-
-const staffByline = (staff: any): string => {
-  const list = staffToList(staff)
-    .map((x: any) => (x?.attributes ? x.attributes : x))
-    .filter(Boolean)
-    .map((p: any) => {
-      const name = p?.name ?? "";
-      const role = p?.role ?? "";
-      if (name && role) return `${name} • ${role}`;
-      return name || role || "";
-    })
-    .filter(Boolean);
-
-  if (!list.length) return "";
-  return `By ${list.join(", ")}`;
-};
 ---
 
 <BaseLayout title={`${showName} · NNN`}>

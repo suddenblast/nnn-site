@@ -3,49 +3,11 @@ export const prerender = false;
 
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { strapiGet } from "../../lib/strapi";
-
-interface StrapiItem {
-  id: number;
-  attributes?: Record<string, any>;
-}
-
-interface Story {
-  id: number;
-  headline?: string;
-  dek?: string;
-  slug?: string;
-  staff?: any;
-  coverImage?: any;
-  videoUrl?: string;
-  videoURL?: string;
-  video?: string;
-  articleBody?: any;
-  body?: any;
-}
+import { norm, staffByline } from "../../lib/normalize";
+import { toEmbedUrl } from "../../lib/video";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/stories");
-
-const norm = (item: StrapiItem): Story =>
-  item?.attributes ? { ...item.attributes, id: item.id } : item as Story;
-
-const toEmbedUrl = (url: string | null): string | null => {
-  if (!url) return null;
-
-  if (url.includes("youtube.com") || url.includes("youtu.be")) {
-    const id =
-      url.split("v=")[1]?.split("&")[0] ??
-      url.split("youtu.be/")[1]?.split("?")[0];
-    return id ? `https://www.youtube.com/embed/${id}` : null;
-  }
-
-  if (url.includes("vimeo.com")) {
-    const id = url.split("vimeo.com/")[1]?.split("?")[0];
-    return id ? `https://player.vimeo.com/video/${id}` : null;
-  }
-
-  return null;
-};
 
 /* -----------------------------
    Fetch story (SSR-safe)
@@ -68,28 +30,7 @@ const dek = story?.dek ?? "";
 /* -----------------------------
    Staff byline
 ----------------------------- */
-const staffList = story?.staff?.data
-  ? Array.isArray(story.staff.data)
-    ? story.staff.data.map(norm)
-    : [norm(story.staff.data)]
-  : Array.isArray(story?.staff)
-  ? story.staff.map(norm)
-  : story?.staff
-  ? [norm(story.staff)]
-  : [];
-
-const byline =
-  staffList.length
-    ? `By ${staffList
-        .map((p: any) => {
-          const name = p?.name ?? "";
-          const role = p?.role ?? "";
-          if (name && role) return `${name} • ${role}`;
-          return name || role || "";
-        })
-        .filter(Boolean)
-        .join(", ")}`
-    : "By NNN Staff";
+const byline = staffByline(story.staff) || "By NNN Staff";
 
 /* -----------------------------
    Media

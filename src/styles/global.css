@@ -509,7 +509,7 @@ main{ padding:22px 0 48px; }
   object-fit: cover;
   border-radius: 50%;
   flex-shrink: 0;
-  background: var(--card2);
+  background: var(--soft);
 }
 
 /* Empty fallback */
