@@ -4,12 +4,32 @@ export const prerender = false;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { strapiGet } from "../../lib/strapi";
 
+interface StrapiItem {
+  id: number;
+  attributes?: Record<string, any>;
+}
+
+interface Story {
+  id: number;
+  headline?: string;
+  dek?: string;
+  slug?: string;
+  staff?: any;
+  coverImage?: any;
+  videoUrl?: string;
+  videoURL?: string;
+  video?: string;
+  articleBody?: any;
+  body?: any;
+}
+
 const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/stories");
 
-const norm = (item) =>
-  item?.attributes ? { ...item.attributes, id: item.id } : item;
+const norm = (item: StrapiItem): Story =>
+  item?.attributes ? { ...item.attributes, id: item.id } : item as Story;
 
-const toEmbedUrl = (url) => {
+const toEmbedUrl = (url: string | null): string | null => {
   if (!url) return null;
 
   if (url.includes("youtube.com") || url.includes("youtu.be")) {
@@ -61,7 +81,7 @@ const staffList = story?.staff?.data
 const byline =
   staffList.length
     ? `By ${staffList
-        .map((p) => {
+        .map((p: any) => {
           const name = p?.name ?? "";
           const role = p?.role ?? "";
           if (name && role) return `${name} • ${role}`;
@@ -152,7 +172,7 @@ const body = story?.articleBody ?? story?.body ?? null;
             ? block.children
             : [];
 
-          const text = children.map((c) => c?.text ?? "").join("");
+          const text = children.map((c: any) => c?.text ?? "").join("");
           if (!text.trim()) return null;
 
           if (block.type === "heading" || block.type === "h2") {

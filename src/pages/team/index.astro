@@ -45,7 +45,7 @@ const endpoints = [
 
 for (const path of endpoints) {
   try {
-    const res = await strapiGet<TeamResponse>(path);
+    const res = await strapiGet(path);
     const raw = Array.isArray(res?.data) ? res.data : [];
     if (raw.length) {
       team = raw.map(norm);

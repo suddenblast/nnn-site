@@ -4,8 +4,37 @@ import { strapiGet } from "../../lib/strapi";
 
 export const prerender = false;
 
+interface StrapiItem {
+  id: number;
+  attributes?: Record<string, any>;
+}
+
+interface Show {
+  id: number;
+  name?: string;
+  slug?: string;
+  description?: string;
+  logo?: any;
+  ep?: any;
+  heroVideoUrl?: string;
+}
+
+interface Story {
+  id: number;
+  headline?: string;
+  slug?: string;
+  publishedAt?: string;
+  staff?: any;
+}
+
+interface Staff {
+  id: number;
+  name?: string;
+  role?: string;
+}
+
 /* Convert video URLs → embed URLs */
-const toEmbedUrl = (url) => {
+const toEmbedUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
 
   // YouTube
@@ -26,10 +55,11 @@ const toEmbedUrl = (url) => {
 };
 
 // Normalizer for Strapi v4 + v5-ish shapes
-const norm = (item) => (item?.attributes ? { ...item.attributes, id: item.id } : item);
+const norm = (item: StrapiItem): Show => (item?.attributes ? { ...item.attributes, id: item.id } : item as Show);
 
 /* Page param */
 const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/shows");
 
 /* -----------------------------
    1) Fetch show (+ logo + EP)
@@ -65,21 +95,21 @@ const heroEmbed = toEmbedUrl(show.heroVideoUrl);
 /* -----------------------------
    EP normalization
 ----------------------------- */
-const relToArray = (rel) => {
+const relToArray = (rel: any): any[] => {
   if (!rel) return [];
   if (Array.isArray(rel)) return rel;
   if (rel?.data) return Array.isArray(rel.data) ? rel.data : [rel.data];
   return [rel];
 };
 
-const getName = (p) => p?.name ?? p?.attributes?.name ?? "";
+const getName = (p: any): string => p?.name ?? p?.attributes?.name ?? "";
 
 const epList = relToArray(show?.ep)
-  .map((p) => (p?.attributes ? p.attributes : p))
+  .map((p: any) => (p?.attributes ? p.attributes : p))
   .filter(Boolean);
 
 const epText = epList
-  .map((p) => getName(p))
+  .map((p: any) => getName(p))
   .filter(Boolean)
   .join(", ");
 
@@ -115,23 +145,23 @@ if (showId) {
   }
 }
 
-const storyHref = (s) => `/stories/${s.slug}`;
+const storyHref = (s: Story): string => `/stories/${s.slug}`;
 
 /* -----------------------------
    BYLINES (no date)
 ----------------------------- */
-const staffToList = (staff) => {
+const staffToList = (staff: any): any[] => {
   if (!staff) return [];
   if (Array.isArray(staff)) return staff;
   if (staff?.data) return Array.isArray(staff.data) ? staff.data : [staff.data];
   return [staff];
 };
 
-const staffByline = (staff) => {
+const staffByline = (staff: any): string => {
   const list = staffToList(staff)
-    .map((x) => (x?.attributes ? x.attributes : x))
+    .map((x: any) => (x?.attributes ? x.attributes : x))
     .filter(Boolean)
-    .map((p) => {
+    .map((p: any) => {
       const name = p?.name ?? "";
       const role = p?.role ?? "";
       if (name && role) return `${name} • ${role}`;
@@ -199,7 +229,7 @@ const staffByline = (staff) => {
       <p class="dek" style="margin:0;">No stories linked to this show yet.</p>
     ) : (
       <div class="list">
-        {stories.map((s) => {
+        {stories.map((s: any) => {
           const headline = s.headline ?? "Untitled story";
 
           if (!s.slug) {

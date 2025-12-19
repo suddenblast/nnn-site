@@ -4,6 +4,26 @@ import { strapiGet } from "../../lib/strapi";
 
 export const prerender = false;
 
+interface StrapiItem {
+  id: number;
+  attributes?: Record<string, any>;
+}
+
+interface Show {
+  id: number;
+  name?: string;
+  slug?: string;
+  description?: string;
+  logo?: any;
+  series?: any;
+}
+
+interface Series {
+  name: string;
+  slug: string;
+  key: string;
+}
+
 const res = await strapiGet("/api/shows", {
   sort: "name:asc",
   "populate[0]": "logo",
@@ -13,13 +33,13 @@ const res = await strapiGet("/api/shows", {
 const showsRaw = res?.data ?? [];
 
 // Normalize Strapi v4 + v5-ish shapes
-const norm = (item) => (item?.attributes ? { ...item.attributes, id: item.id } : item);
+const norm = (item: StrapiItem): Show => (item?.attributes ? { ...item.attributes, id: item.id } : item as Show);
 const shows = showsRaw.map(norm);
 
 // Extract series safely
-const getSeries = (show) => {
+const getSeries = (show: Show): Series => {
   const raw = show?.series;
-  const clean = (v) => (v == null ? "" : String(v)).trim();
+  const clean = (v: unknown): string => (v == null ? "" : String(v)).trim();
 
   const v4 = raw?.data?.attributes;
 
@@ -30,12 +50,12 @@ const getSeries = (show) => {
 };
 
 // Bucketing rules
-const isNNR = (s) =>
+const isNNR = (s: Series): boolean =>
   s.key.includes("northwestern") ||
   s.key.includes("northwetsern") || // typo-safe
   s.key === "nnr";
 
-const isNNX = (s) =>
+const isNNX = (s: Series): boolean =>
   s.key === "nnx" || s.key.includes("nnx");
 
 const nnrShows = [];
