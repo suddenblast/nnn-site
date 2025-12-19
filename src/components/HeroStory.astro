@@ -1,5 +1,7 @@
 ---
 import { getYouTubeThumb, getYouTubeId } from "../lib/video";
+import { imageUrl } from "../lib/normalize";
+import { STRAPI_ORIGIN } from "../lib/strapi";
 
 type Props = {
   story: {
@@ -8,12 +10,25 @@ type Props = {
     dek?: string;
     airDate?: string;
     videoUrl?: string;
+    thumbnail?: any;
   };
 };
 
 const { story } = Astro.props as Props;
 
-const thumb = getYouTubeThumb(story.videoUrl, "hq");
+const videoThumb = getYouTubeThumb(story.videoUrl, "hq");
+const coverThumb = imageUrl(story.thumbnail);
+const thumb = videoThumb || coverThumb;
+
+// Absolutize relative URLs
+const absolutize = (src: string | null) => {
+  if (!src) return null;
+  if (src.startsWith("http")) return src;
+  if (src.startsWith("/")) return `${STRAPI_ORIGIN}${src}`;
+  return src;
+};
+const finalThumb = absolutize(thumb);
+
 const ytId = getYouTubeId(story.videoUrl);
 
 function formatDate(d?: string) {
@@ -27,9 +42,9 @@ function formatDate(d?: string) {
 ---
 
 <section class="card">
-  {thumb && (
+  {finalThumb && (
     <a class="hero-media" href={`/stories/${story.slug}/`} style="display:block; position:relative;">
-      <img src={thumb} alt="" loading="lazy" />
+      <img src={finalThumb} alt="" loading="lazy" />
       <span class="playbadge" aria-hidden="true">
         ▶ Watch / Read
       </span>

@@ -81,7 +81,8 @@ if (showId) {
     `?sort=publishedAt:desc` +
     `&pagination[pageSize]=200` +
     `&fields[0]=headline&fields[1]=slug&fields[2]=publishedAt` +
-    `&populate[0]=staff`;
+    `&populate[0]=staff` +
+    `&populate[1]=thumbnail`;
 
   const urlShow =
     base +

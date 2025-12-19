@@ -2,6 +2,8 @@
 
 const STRAPI_URL = import.meta.env.STRAPI_URL ?? "http://localhost:1337";
 
+export const STRAPI_ORIGIN = STRAPI_URL;
+
 // Minimal, robust query serializer that preserves bracketed keys like:
 // populate[0]=series, filters[slug][$eq]=..., pagination[pageSize]=...
 function serializeQuery(obj: Record<string, any>, prefix = ""): string[] {

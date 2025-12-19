@@ -5,6 +5,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { strapiGet } from "../../lib/strapi";
 import { norm, staffByline } from "../../lib/normalize";
 import { toEmbedUrl } from "../../lib/video";
+import { imageUrl } from "../../lib/normalize";
+import { STRAPI_ORIGIN } from "../../lib/strapi";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/stories");
@@ -26,6 +28,18 @@ const story = norm(storyRaw);
 
 const headline = story?.headline ?? "Untitled story";
 const dek = story?.dek ?? "";
+
+/* -----------------------------
+   Thumbnail
+----------------------------- */
+const thumb = imageUrl(story.thumbnail);
+const absolutize = (src: string | null) => {
+  if (!src) return null;
+  if (src.startsWith("http")) return src;
+  if (src.startsWith("/")) return `${STRAPI_ORIGIN}${src}`;
+  return src;
+};
+const finalThumb = absolutize(thumb);
 
 /* -----------------------------
    Staff byline
@@ -96,6 +110,16 @@ const body = story?.articleBody ?? story?.body ?? null;
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
           />
+        </div>
+      </div>
+    </section>
+  )}
+
+  {!embed && finalThumb && (
+    <section class="card card-pad" style="margin-top:16px;">
+      <div class="embed" style="background: transparent;">
+        <div class="embed-inner">
+          <img src={finalThumb} alt="Story thumbnail" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:8px;" />
         </div>
       </div>
     </section>
