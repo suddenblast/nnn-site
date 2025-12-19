@@ -76,30 +76,28 @@ const epText = epList
 let stories = [];
 
 if (showId) {
-  const base =
-    `/api/stories` +
-    `?sort=publishedAt:desc` +
-    `&pagination[pageSize]=200` +
-    `&fields[0]=headline&fields[1]=slug&fields[2]=publishedAt` +
-    `&populate[0]=staff` +
-    `&populate[1]=thumbnail`;
-
-  const urlShow =
-    base +
-    `&populate[1]=show` +
-    `&filters[show][id][$eq]=${encodeURIComponent(String(showId))}`;
-
-  const urlShows =
-    base +
-    `&populate[1]=shows` +
-    `&filters[shows][id][$eq]=${encodeURIComponent(String(showId))}`;
-
   try {
-    const storiesRes = await strapiGet(urlShow);
-    stories = (storiesRes?.data ?? []).map(norm);
-  } catch (e) {
-    const storiesRes2 = await strapiGet(urlShows);
-    stories = (storiesRes2?.data ?? []).map(norm);
+    const storiesRes = await strapiGet("/api/stories", {
+      sort: "publishedAt:desc",
+      "pagination[pageSize]": 200,
+      fields: ["headline", "slug", "publishedAt"],
+      populate: "*",
+    });
+
+    stories = (storiesRes?.data ?? [])
+      .map(norm)
+      .filter((s: any) => {
+        const rels = [
+          ...relToArray(s.show),
+          ...relToArray(s.shows),
+        ]
+          .map((r: any) => norm(r))
+          .filter(Boolean);
+
+        return rels.some((r: any) => r?.id === showId);
+      });
+  } catch (err) {
+    console.error("Failed to load stories for show", err);
   }
 }
 
