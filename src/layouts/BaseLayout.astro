@@ -31,7 +31,7 @@ const navLinks = [
   </head>
 
   <body>
-    <header class="topbar">
+    <header class="topbar" id="header">
       <div class="container nav">
         <a class="brand" href="/" aria-label="Northwestern News Network">
           <picture>
@@ -137,6 +137,27 @@ const navLinks = [
           const t = e.target;
           if (t && t.closest && t.closest("a")) setOpen(false);
         });
+      })();
+
+      // Header scroll effect
+      (() => {
+        const header = document.getElementById("header");
+        if (!header) return;
+
+        let lastScrollY = window.scrollY;
+
+        const updateHeader = () => {
+          const scrollY = window.scrollY;
+          if (scrollY > 50) {
+            header.classList.add("scrolled");
+          } else {
+            header.classList.remove("scrolled");
+          }
+          lastScrollY = scrollY;
+        };
+
+        window.addEventListener("scroll", updateHeader, { passive: true });
+        updateHeader(); // Initial check
       })();
     </script>
   </body>

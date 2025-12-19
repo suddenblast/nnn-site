@@ -67,7 +67,7 @@ const emojiFor = (text = "") => {
 // Current-ish = first period
 const now = periods[0] ?? null;
 
-// 10 daytime periods (label says 8-day)
+// 10 daytime periods (label says 7-day)
 const tenDay = periods.filter((p) => p?.isDaytime).slice(0, 10);
 
 /* -----------------------------
@@ -95,9 +95,9 @@ const socials = [
       </section>
     </div>
 
-    <aside style="display:grid; gap:14px;">
+    <aside style="display:grid; gap:14px; align-content:start;">
       <!-- Weather Card -->
-      <section class="card">
+      <section class="card" style="height: fit-content;">
         <div class="card-pad">
           <div class="section-title">Evanston Weather</div>
 
@@ -122,7 +122,7 @@ const socials = [
                     color:var(--muted2);
                   "
                 >
-                  8-Day Forecast
+                  7-Day Forecast
                 </div>
 
                 <div style="margin-top:8px; display:grid; gap:8px;">
