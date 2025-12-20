@@ -12,6 +12,7 @@ interface Show {
   description?: string;
   logo?: any;
   series?: any;
+  airDate?: string;
 }
 
 interface Series {
@@ -21,7 +22,7 @@ interface Series {
 }
 
 const res = await strapiGet("/api/shows", {
-  sort: "name:asc",
+  sort: "airDate:desc",
   "populate[0]": "logo",
   "populate[1]": "series",
 });
@@ -29,7 +30,14 @@ const res = await strapiGet("/api/shows", {
 const showsRaw = res?.data ?? [];
 
 // Normalize Strapi v4 + v5-ish shapes
-const shows = showsRaw.map(norm);
+const dateValue = (show: Show): number => {
+  const ts = show?.airDate ? Date.parse(show.airDate) : NaN;
+  return Number.isFinite(ts) ? ts : 0;
+};
+
+const shows = showsRaw
+  .map(norm)
+  .sort((a: Show, b: Show) => dateValue(b) - dateValue(a));
 
 // Extract series safely
 const getSeries = (show: Show): Series => {
