@@ -1,7 +1,6 @@
 ---
 import { getYouTubeThumb } from "../lib/video";
-import { imageUrl } from "../lib/normalize";
-import { STRAPI_ORIGIN } from "../lib/strapi";
+import { imageUrl, sectionLabel, absoluteMediaUrl } from "../lib/normalize";
 
 type Props = {
   story: {
@@ -11,6 +10,7 @@ type Props = {
     airDate?: string;
     videoUrl?: string;
     thumbnail?: any;
+    section?: string;
   };
 };
 
@@ -18,15 +18,13 @@ const { story } = Astro.props as Props;
 const videoThumb = getYouTubeThumb(story.videoUrl, "hq");
 const coverThumb = imageUrl(story.thumbnail);
 const thumb = videoThumb || coverThumb;
+const section = sectionLabel(story.section);
+const metaParts: string[] = [];
+if (story.airDate) metaParts.push(formatDate(story.airDate));
+if (story.videoUrl) metaParts.push("Video");
+const metaText = metaParts.join(" • ");
 
-// Absolutize relative URLs
-const absolutize = (src: string | null) => {
-  if (!src) return null;
-  if (src.startsWith("http")) return src;
-  if (src.startsWith("/")) return `${STRAPI_ORIGIN}${src}`;
-  return src;
-};
-const finalThumb = absolutize(thumb);
+const finalThumb = absoluteMediaUrl(thumb);
 
 function formatDate(d?: string) {
   if (!d) return "";
@@ -45,9 +43,9 @@ function formatDate(d?: string) {
   )}
 
   <div style="flex:1; min-width:0;">
-    <div class="story-meta">
-      {story.airDate ? formatDate(story.airDate) : ""}
-      {story.videoUrl ? " • Video" : ""}
+    <div class="story-meta" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      {section && <span class="pill">{section}</span>}
+      {metaText && <span>{metaText}</span>}
     </div>
 
     <div class="story-title">{story.headline}</div>

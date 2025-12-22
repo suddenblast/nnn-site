@@ -1,3 +1,5 @@
+import { STRAPI_ORIGIN } from "./strapi";
+
 // Normalize Strapi entries (supports { id, attributes } and top-level fields)
 export const norm = (item: any) => {
   if (!item) return item;
@@ -23,6 +25,28 @@ export const imageAlt = (img: any, fallback = ""): string => {
     img?.attributes?.alternativeText ??
     img?.data?.attributes?.alternativeText ??
     fallback
+  );
+};
+
+export const absoluteMediaUrl = (src?: string | null): string | null => {
+  if (!src) return null;
+  if (src.startsWith("http")) return src;
+  if (src.startsWith("/")) return `${STRAPI_ORIGIN}${src}`;
+  return src;
+};
+
+export const sectionLabel = (section: any): string => {
+  if (!section) return "";
+  if (typeof section === "string") return section;
+
+  return (
+    section?.name ??
+    section?.title ??
+    section?.label ??
+    section?.value ??
+    section?.data?.attributes?.name ??
+    section?.data?.attributes?.title ??
+    ""
   );
 };
 

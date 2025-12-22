@@ -7,6 +7,7 @@ import {
   imageAlt,
   roleText,
   plainText,
+  absoluteMediaUrl,
 } from "../../lib/normalize";
 
 type Person = {
@@ -21,20 +22,6 @@ type TeamResponse = { data: any[] };
 
 let team: Person[] = [];
 let note = "";
-
-// Change if your Strapi origin differs
-const STRAPI_ORIGIN =
-  import.meta.env.PUBLIC_STRAPI_URL ||
-  import.meta.env.STRAPI_URL ||
-  "http://localhost:1337";
-
-// Convert relative upload URLs → absolute
-const absolutize = (src: string | null) => {
-  if (!src) return null;
-  if (src.startsWith("http")) return src;
-  if (src.startsWith("/")) return `${STRAPI_ORIGIN}${src}`;
-  return src;
-};
 
 // Endpoints to try (populate headshot)
 const endpoints = [
@@ -88,7 +75,7 @@ if (!team.length) {
       team.map((p) => {
         const role = roleText(p.role);
         const bio = plainText(p.bio);
-        const src = absolutize(imageUrl(p.headshot));
+        const src = absoluteMediaUrl(imageUrl(p.headshot));
         const alt = imageAlt(p.headshot, p.name ?? "Staff headshot");
 
         return (

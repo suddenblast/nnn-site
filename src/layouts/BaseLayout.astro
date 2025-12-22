@@ -14,6 +14,10 @@ const navLinks = [
   { href: "/shows", label: "Shows" },
   { href: "/team", label: "Our Team" },
 ];
+const navLinksWithState = navLinks.map((link) => ({
+  ...link,
+  active: isActive(link.href),
+}));
 ---
 
 <html lang="en">
@@ -44,13 +48,13 @@ const navLinks = [
 
         <!-- Desktop links -->
         <nav class="navlinks" aria-label="Primary">
-          {navLinks.map((l) => (
+          {navLinksWithState.map((link) => (
             <a
-              href={l.href}
-              class:list={[isActive(l.href) && "active"]}
-              aria-current={isActive(l.href) ? "page" : undefined}
+              href={link.href}
+              class:list={[link.active && "active"]}
+              aria-current={link.active ? "page" : undefined}
             >
-              {l.label}
+              {link.label}
             </a>
           ))}
         </nav>
@@ -72,13 +76,13 @@ const navLinks = [
       <div class="mobile-menu" id="mobile-menu" hidden data-mobile-menu>
         <div class="container mobile-menu-inner">
           <nav class="mobile-links" aria-label="Mobile Primary">
-            {navLinks.map((l) => (
+            {navLinksWithState.map((link) => (
               <a
-                href={l.href}
-                class:list={[isActive(l.href) && "active"]}
-                aria-current={isActive(l.href) ? "page" : undefined}
+                href={link.href}
+                class:list={[link.active && "active"]}
+                aria-current={link.active ? "page" : undefined}
               >
-                {l.label}
+                {link.label}
               </a>
             ))}
           </nav>
@@ -137,18 +141,20 @@ const navLinks = [
       (() => {
         const btn = document.querySelector("[data-menu-button]");
         const menu = document.querySelector("[data-mobile-menu]");
-        if (!btn || !menu) return;
+        const header = document.getElementById("header");
+        if (!btn || !menu || !header) return;
 
         const setOpen = (open) => {
           btn.setAttribute("aria-expanded", String(open));
           btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
           menu.hidden = !open;
           document.documentElement.classList.toggle("menu-open", open);
-          // optional: lock scroll
           document.documentElement.style.overflow = open ? "hidden" : "";
         };
 
-        setOpen(false);
+        const updateHeader = () => {
+          header.classList.toggle("scrolled", window.scrollY > 50);
+        };
 
         btn.addEventListener("click", () => {
           const open = btn.getAttribute("aria-expanded") === "true";
@@ -160,30 +166,12 @@ const navLinks = [
         });
 
         menu.addEventListener("click", (e) => {
-          const t = e.target;
-          if (t && t.closest && t.closest("a")) setOpen(false);
+          if (e.target && e.target.closest && e.target.closest("a")) setOpen(false);
         });
-      })();
-
-      // Header scroll effect
-      (() => {
-        const header = document.getElementById("header");
-        if (!header) return;
-
-        let lastScrollY = window.scrollY;
-
-        const updateHeader = () => {
-          const scrollY = window.scrollY;
-          if (scrollY > 50) {
-            header.classList.add("scrolled");
-          } else {
-            header.classList.remove("scrolled");
-          }
-          lastScrollY = scrollY;
-        };
 
         window.addEventListener("scroll", updateHeader, { passive: true });
-        updateHeader(); // Initial check
+        setOpen(false);
+        updateHeader();
       })();
     </script>
   </body>

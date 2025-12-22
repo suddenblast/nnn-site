@@ -1,6 +1,9 @@
 // src/lib/strapi.ts
 
-const STRAPI_URL = import.meta.env.STRAPI_URL ?? "http://localhost:1337";
+const STRAPI_URL =
+  import.meta.env.PUBLIC_STRAPI_URL ??
+  import.meta.env.STRAPI_URL ??
+  "http://localhost:1337";
 
 export const STRAPI_ORIGIN = STRAPI_URL;
 

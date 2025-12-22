@@ -236,6 +236,11 @@ main{ padding:22px 0 48px; }
   padding:3px 8px;
   border-radius:999px;
 }
+.pill.active{
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--line2));
+  background: color-mix(in srgb, var(--accent) 12%, #fff);
+  color:var(--accent2);
+}
 
 .h1{
   margin:10px 0 8px;
