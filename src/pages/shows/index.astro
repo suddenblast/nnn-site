@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { strapiGet } from "../../lib/strapi";
 import { norm } from "../../lib/normalize";
+import { seriesLogos } from "../../lib/seriesLogos";
 
 export const prerender = false;
 
@@ -85,8 +86,19 @@ for (const show of shows) {
 
   <div style="height:14px;"></div>
 
-  <div class="card card-pad">
-    <div class="section-title">Northwestern News Report</div>
+    <div class="card card-pad">
+    <div class={`section-title${seriesLogos.nnr.src ? " section-title-logo" : ""}`}>
+      {seriesLogos.nnr.src ? (
+        <img
+          src={seriesLogos.nnr.src}
+          alt={seriesLogos.nnr.alt}
+          class="series-logo"
+          loading="lazy"
+        />
+      ) : (
+        "Northwestern News Report"
+      )}
+    </div>
 
     {nnrShows.length ? (
       <div class="shows-grid">
@@ -143,7 +155,18 @@ for (const show of shows) {
 
     <div style="height:18px;"></div>
 
-    <div class="section-title">NNX</div>
+    <div class={`section-title${seriesLogos.nnx.src ? " section-title-logo" : ""}`}>
+      {seriesLogos.nnx.src ? (
+        <img
+          src={seriesLogos.nnx.src}
+          alt={seriesLogos.nnx.alt}
+          class="series-logo"
+          loading="lazy"
+        />
+      ) : (
+        "NNX"
+      )}
+    </div>
 
     {nnxShows.length ? (
       <div class="shows-grid">
@@ -288,6 +311,16 @@ for (const show of shows) {
         transform: none;
         box-shadow: var(--shadow);
         border-color: var(--line);
+      }
+      .section-title-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .series-logo {
+        height: 48px;
+        width: auto;
+        max-width: 100%;
       }
     </style>
   </div>

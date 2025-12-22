@@ -198,8 +198,15 @@ main{ padding:22px 0 48px; }
   gap:18px;
 }
 
+.sidebar{
+  position:sticky;
+  top:94px; /* leaves room for the header + page padding */
+  align-self:start;
+}
+
 @media (max-width: 920px){
   .grid{ grid-template-columns: 1fr; }
+  .sidebar{ position:static; }
 }
 
 /* ---------- Cards & UI ---------- */
@@ -572,4 +579,3 @@ main{ padding:22px 0 48px; }
     height: 64px;
   }
 }
-
