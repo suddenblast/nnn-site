@@ -97,11 +97,37 @@ const navLinks = [
       </div>
     </main>
 
-    <footer class="footer">
+    <footer class="footer" aria-label="Northwestern University footer">
       <div class="container">
-        <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-          <div><strong>NNN</strong> · Northwestern News Network</div>
-          <div>© {new Date().getFullYear()}</div>
+        <div class="nu-footer-top">
+          <div class="nu-footer-brand">
+            <img
+              class="nu-footer-logo"
+              src="/northwestern-wordmark.svg"
+              alt="Northwestern University"
+              loading="lazy"
+            />
+            <div class="nu-footer-kicker">
+              Medill School of Journalism, Media, Integrated Marketing Communications
+            </div>
+            <div class="nu-footer-address">1845 Sheridan Road · Evanston, IL 60208</div>
+            <a class="nu-footer-phone" href="tel:8474915225">847-491-5225</a>
+            <a class="nu-footer-site" href="https://www.medill.northwestern.edu/">medill.northwestern.edu</a>
+          </div>
+
+          <div class="nu-footer-links" aria-label="Medill quick links">
+            <a href="https://www.medill.northwestern.edu/">Medill Home</a>
+            <a href="https://www.medill.northwestern.edu/news-and-events/index.html">News & Events</a>
+            <a href="https://www.medill.northwestern.edu/directory/index.html">Directory</a>
+            <a href="https://www.medill.northwestern.edu/about/visit.html">Visit Medill</a>
+            <a href="https://www.medill.northwestern.edu/give.html">Support Medill</a>
+            <a href="https://www.medill.northwestern.edu/about/contact.html">Contact Medill</a>
+          </div>
+        </div>
+
+        <div class="nu-footer-bottom">
+          <span>© {new Date().getFullYear()} Northwestern University</span>
+          <span>All Rights Reserved</span>
         </div>
       </div>
     </footer>
