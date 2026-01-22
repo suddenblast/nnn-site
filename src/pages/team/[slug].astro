@@ -1,0 +1,151 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { strapiGet } from "../../lib/strapi";
+import {
+  norm,
+  imageUrl,
+  imageAlt,
+  roleText,
+  plainText,
+  absoluteMediaUrl,
+} from "../../lib/normalize";
+import StoryCard from "../../components/StoryCard.astro";
+
+type Person = {
+  slug?: string;
+  name?: string;
+  role?: any;
+  bio?: any;
+  headshot?: any;
+  active?: boolean;
+};
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/team");
+
+let person: Person | null = null;
+let note = "";
+
+const endpoints = [
+  {
+    path: "/api/staff",
+    query: { filters: { slug: { $eq: slug } }, populate: { headshot: true } },
+  },
+  {
+    path: "/api/staffs",
+    query: { filters: { slug: { $eq: slug } }, populate: { headshot: true } },
+  },
+  {
+    path: "/api/team",
+    query: { filters: { slug: { $eq: slug } }, populate: { headshot: true } },
+  },
+];
+
+for (const endpoint of endpoints) {
+  try {
+    const res = await strapiGet(endpoint.path, endpoint.query);
+    const raw = Array.isArray(res?.data) ? res.data[0] : null;
+    if (raw) {
+      person = norm(raw);
+      break;
+    }
+  } catch {
+    // keep trying
+  }
+}
+
+if (!person) {
+  note =
+    "This staff profile hasn't been published yet. Check the Team page to see who is live.";
+}
+
+let stories: any[] = [];
+try {
+  const res = await strapiGet("/api/stories", {
+    sort: ["airDate:desc"],
+    pagination: { pageSize: 200 },
+    filters: { staff: { slug: { $eq: slug } } },
+    populate: ["thumbnail", "section", "staff"],
+  });
+
+  const raw = Array.isArray(res?.data) ? res.data : [];
+  stories = raw.map(norm).filter((s: any) => s?.slug);
+} catch {
+  // keep empty
+}
+
+const name = person?.name ?? "Staff member";
+const role = roleText(person?.role);
+const bio = plainText(person?.bio);
+const headshotSrc = absoluteMediaUrl(imageUrl(person?.headshot));
+const headshotAlt = imageAlt(person?.headshot, `${name} headshot`);
+---
+
+<BaseLayout title={`${name} • NNN`}>
+  <div
+    style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:6px 0 14px;"
+  >
+    <div>
+      <div class="section-title">Staff</div>
+      <div style="color:var(--muted); font-weight:650;">
+        {name}
+      </div>
+    </div>
+    <a class="btn" href="/team">← Team</a>
+  </div>
+
+  {note && (
+    <section class="card" style="margin-bottom:14px;">
+      <div class="card-pad" style="color:var(--muted); font-size:14px;">
+        {note}
+      </div>
+    </section>
+  )}
+
+  {person && (
+    <section class="card" style="margin-bottom:16px;">
+      <div
+        class="card-pad"
+        style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;"
+      >
+        {headshotSrc ? (
+          <img
+            src={headshotSrc}
+            alt={headshotAlt}
+            loading="lazy"
+            class="staff-headshot"
+          />
+        ) : (
+          <div class="staff-headshot staff-headshot--empty" aria-hidden="true" />
+        )}
+
+        <div style="flex:1; min-width:240px;">
+          <div class="story-title" style="font-size:20px;">
+            {name}
+          </div>
+          {role && <div class="story-meta" style="margin-top:4px;">{role}</div>}
+          {bio && <div class="story-dek" style="margin-top:8px;">{bio}</div>}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section>
+    <div class="section-title">Stories</div>
+    {stories.length ? (
+      <div class="list list--grid">
+        {stories.map((s) => (
+          <StoryCard story={s} />
+        ))}
+      </div>
+    ) : (
+      <section class="card">
+        <div class="card-pad" style="color:var(--muted); font-size:14px;">
+          No stories published yet.
+        </div>
+      </section>
+    )}
+  </section>
+</BaseLayout>

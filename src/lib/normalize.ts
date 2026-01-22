@@ -113,12 +113,11 @@ export const plainText = (value: any): string => {
 // Staff byline from staff relation
 export const staffByline = (staff: any): string => {
   if (!staff) return "";
-  const list = staffToList(staff)
-    .map((x: any) => (x?.attributes ? x.attributes : x))
+  const list = staffList(staff)
     .filter(Boolean)
     .map((p: any) => {
       const name = p?.name ?? "";
-      const role = p?.role ?? "";
+      const role = roleText(p?.role ?? "");
       if (name && role) return `${name} • ${role}`;
       return name || role || "";
     })
@@ -134,4 +133,8 @@ const staffToList = (staff: any): any[] => {
   if (Array.isArray(staff)) return staff;
   if (staff?.data) return Array.isArray(staff.data) ? staff.data : [staff.data];
   return [staff];
+};
+
+export const staffList = (staff: any): any[] => {
+  return staffToList(staff).map((item: any) => norm(item));
 };

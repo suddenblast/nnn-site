@@ -16,6 +16,7 @@ type Person = {
   role?: any;
   bio?: any;
   headshot?: any;
+  active?: boolean;
 };
 
 type TeamResponse = { data: any[] };
@@ -35,7 +36,9 @@ for (const path of endpoints) {
     const res = await strapiGet(path);
     const raw = Array.isArray(res?.data) ? res.data : [];
     if (raw.length) {
-      team = raw.map(norm);
+      team = raw
+        .map(norm)
+        .filter((p: Person) => p?.active !== false);
       break;
     }
   } catch {

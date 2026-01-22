@@ -20,9 +20,11 @@ type Story = {
 
 type StoriesResponse = { data: Story[] };
 
-const { data } = await strapiGet(
-  "/api/stories?sort=airDate:desc&pagination[pageSize]=50&populate[0]=thumbnail&populate[1]=section"
-);
+const { data } = await strapiGet("/api/stories", {
+  sort: ["airDate:desc"],
+  pagination: { pageSize: 50 },
+  populate: ["thumbnail", "section", "staff"],
+});
 
 const stories = data.filter((s: any) => s.slug);
 const hero = stories.find((s: any) => s.featured) ?? stories[0] ?? null;
