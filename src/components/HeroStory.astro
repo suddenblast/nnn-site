@@ -38,7 +38,7 @@ function formatDate(d?: string) {
 <section class="card">
   {finalThumb && (
     <a class="hero-media" href={`/stories/${story.slug}/`} style="display:block; position:relative;">
-      <img src={finalThumb} alt="" loading="lazy" />
+      <img src={finalThumb} alt={story.headline ?? "Featured story"} loading="lazy" />
       <span class="playbadge" aria-hidden="true">
         ▶ Watch / Read
       </span>

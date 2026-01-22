@@ -35,6 +35,7 @@ const navLinksWithState = navLinks.map((link) => ({
   </head>
 
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="topbar" id="header">
       <div class="container nav">
         <a class="brand" href="/" aria-label="Northwestern News Network">
@@ -95,13 +96,13 @@ const navLinksWithState = navLinks.map((link) => ({
       </div>
     </header>
 
-    <main>
+    <main id="main-content" data-page>
       <div class="container">
         <slot />
       </div>
     </main>
 
-    <footer class="footer" aria-label="Northwestern University footer">
+    <footer class="footer" aria-label="Northwestern University footer" data-page>
       <div class="container">
         <div class="nu-footer-top">
           <div class="nu-footer-brand">
@@ -142,6 +143,7 @@ const navLinksWithState = navLinks.map((link) => ({
         const btn = document.querySelector("[data-menu-button]");
         const menu = document.querySelector("[data-mobile-menu]");
         const header = document.getElementById("header");
+        const page = document.querySelectorAll("[data-page]");
         if (!btn || !menu || !header) return;
 
         const setOpen = (open) => {
@@ -150,6 +152,21 @@ const navLinksWithState = navLinks.map((link) => ({
           menu.hidden = !open;
           document.documentElement.classList.toggle("menu-open", open);
           document.documentElement.style.overflow = open ? "hidden" : "";
+          page.forEach((el) => {
+            if ("inert" in el) {
+              el.inert = open;
+            } else if (open) {
+              el.setAttribute("aria-hidden", "true");
+            } else {
+              el.removeAttribute("aria-hidden");
+            }
+          });
+          if (open) {
+            const firstLink = menu.querySelector("a");
+            if (firstLink) firstLink.focus();
+          } else {
+            btn.focus();
+          }
         };
 
         const updateHeader = () => {

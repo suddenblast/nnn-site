@@ -57,7 +57,7 @@ if (!team.length) {
     style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:6px 0 14px;"
   >
     <div>
-      <div class="section-title">Team</div>
+      <h1 class="section-title">Team</h1>
       <div style="color:var(--muted); font-weight:650;">
         Meet the people behind NNN.
       </div>
@@ -81,12 +81,8 @@ if (!team.length) {
         const src = absoluteMediaUrl(imageUrl(p.headshot));
         const alt = imageAlt(p.headshot, p.name ?? "Staff headshot");
 
-        return (
-          <a
-            class="storycard"
-            href={p.slug ? `/team/${p.slug}/` : "#"}
-            aria-disabled={!p.slug}
-          >
+        return p.slug ? (
+          <a href={`/team/${p.slug}/`} class="storycard">
             {/* LEFT: text */}
             <div style="flex:1; min-width:0;">
               <div class="story-title">{p.name ?? "Unnamed"}</div>
@@ -124,6 +120,45 @@ if (!team.length) {
               />
             )}
           </a>
+        ) : (
+          <div class="storycard storycard-disabled" aria-disabled="true">
+            {/* LEFT: text */}
+            <div style="flex:1; min-width:0;">
+              <div class="story-title">{p.name ?? "Unnamed"}</div>
+
+              {role && <div class="story-meta">{role}</div>}
+
+              {bio && (
+                <div
+                  class="story-dek"
+                  style="
+                    margin-top:6px;
+                    display:-webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow:hidden;
+                  "
+                >
+                  {bio}
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT: headshot */}
+            {src ? (
+              <img
+                src={src}
+                alt={alt}
+                loading="lazy"
+                class="staff-headshot"
+              />
+            ) : (
+              <div
+                class="staff-headshot staff-headshot--empty"
+                aria-hidden="true"
+              />
+            )}
+          </div>
         );
       })
     ) : (
