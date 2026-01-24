@@ -18,7 +18,7 @@ const { story } = Astro.props as Props;
 
 const videoThumb = getYouTubeThumb(story.videoUrl, "hq");
 const coverThumb = imageUrl(story.thumbnail);
-const thumb = videoThumb || coverThumb;
+const thumb = coverThumb || videoThumb;
 
 const finalThumb = absoluteMediaUrl(thumb);
 const section = sectionLabel(story.section);

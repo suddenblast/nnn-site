@@ -5,7 +5,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { strapiGet } from "../../lib/strapi";
 import {
   norm,
-  staffByline,
+  staffBylineParts,
   imageUrl,
   imageAlt,
   sectionLabel,
@@ -45,7 +45,7 @@ const finalThumb = absoluteMediaUrl(thumb);
 /* -----------------------------
    Staff byline
 ----------------------------- */
-const byline = staffByline(story.staff) || "By NNN Staff";
+const bylineParts = staffBylineParts(story.staff);
 
 /* -----------------------------
    Media
@@ -81,13 +81,29 @@ const body = story?.articleBody ?? story?.body ?? null;
       <div class="kicker">
         <span class="pill">Story</span>
         {section && <span class="pill">{section}</span>}
-        <span>{slug}</span>
       </div>
 
       <h1 class="h1">{headline}</h1>
 
-      <div class="story-meta" style="margin-top:6px;">
-        {byline}
+      <div class="story-meta story-byline" style="margin-top:6px;">
+        {bylineParts.length ? (
+          <>
+            <span>By </span>
+            {bylineParts.map((p, i) => (
+              <>
+                {p.slug ? (
+                  <a class="byline-link" href={`/team/${p.slug}/`}>{p.name}</a>
+                ) : (
+                  <span>{p.name}</span>
+                )}
+                {p.role && <span> • {p.role}</span>}
+                {i < bylineParts.length - 1 && <span>, </span>}
+              </>
+            ))}
+          </>
+        ) : (
+          "By NNN Staff"
+        )}
       </div>
 
       {dek && <p class="dek">{dek}</p>}
@@ -137,14 +153,21 @@ const body = story?.articleBody ?? story?.body ?? null;
             ? block.children
             : [];
 
-          const text = children.map((c: any) => c?.text ?? "").join("");
-          if (!text.trim()) return null;
+          const hasText = children.some((c: any) => (c?.text ?? "").trim());
+          if (!hasText) return null;
+
+          const inline = children.map((c: any, i: number) => {
+            const text = c?.text ?? "";
+            if (!text) return null;
+            const content = c?.bold ? <strong>{text}</strong> : text;
+            return c?.italic ? <em>{content}</em> : content;
+          });
 
           if (block.type === "heading" || block.type === "h2") {
-            return <h2>{text}</h2>;
+            return <h2>{inline}</h2>;
           }
 
-          return <p>{text}</p>;
+          return <p>{inline}</p>;
         })}
       </div>
     ) : (

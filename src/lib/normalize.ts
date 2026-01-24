@@ -127,6 +127,23 @@ export const staffByline = (staff: any): string => {
   return `By ${list.join(", ")}`;
 };
 
+export const staffBylineParts = (staff: any): { name: string; role: string; slug: string }[] => {
+  if (!staff) return [];
+  return staffList(staff)
+    .map((p: any) => {
+      const name = p?.name ?? "";
+      const role = roleText(p?.role ?? "");
+      const slug = p?.slug ?? "";
+      if (!name && !role) return null;
+      return {
+        name: name || role,
+        role: name ? role : "",
+        slug: name ? slug : "",
+      };
+    })
+    .filter(Boolean) as { name: string; role: string; slug: string }[];
+};
+
 // Helper for staffToList
 const staffToList = (staff: any): any[] => {
   if (!staff) return [];

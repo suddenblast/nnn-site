@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { strapiGet } from "../../lib/strapi";
-import { norm, staffByline } from "../../lib/normalize";
+import { norm, staffBylineParts } from "../../lib/normalize";
 import { toEmbedUrl } from "../../lib/video";
 
 export const prerender = false;
@@ -177,20 +177,39 @@ const storyHref = (s: Story): string => `/stories/${s.slug}`;
             );
           }
 
-          const by = staffByline(s.staff);
+          const byParts = staffBylineParts(s.staff);
 
           return (
-            <a class="storycard" href={storyHref(s)}>
+            <div class="storycard">
               <div style="flex:1;">
-                <div class="story-title">{headline}</div>
+                <a class="story-title story-title-link" href={storyHref(s)}>
+                  {headline}
+                </a>
 
-                {by ? <div class="story-meta">{by}</div> : <div class="story-meta">By NNN Staff</div>}
+                {byParts.length ? (
+                  <div class="story-meta story-byline">
+                    <span>By </span>
+                    {byParts.map((p, i) => (
+                      <>
+                        {p.slug ? (
+                          <a class="byline-link" href={`/team/${p.slug}/`}>{p.name}</a>
+                        ) : (
+                          <span>{p.name}</span>
+                        )}
+                        {p.role && <span> • {p.role}</span>}
+                        {i < byParts.length - 1 && <span>, </span>}
+                      </>
+                    ))}
+                  </div>
+                ) : (
+                  <div class="story-meta story-byline">By NNN Staff</div>
+                )}
 
-                <div style="margin-top:8px; font-weight:850; color: var(--accent2);">
+                <a class="story-read-link" href={storyHref(s)}>
                   Read story →
-                </div>
+                </a>
               </div>
-            </a>
+            </div>
           );
         })}
       </div>

@@ -5,10 +5,10 @@ import {
   norm,
   imageUrl,
   imageAlt,
-  roleText,
   plainText,
   absoluteMediaUrl,
 } from "../../lib/normalize";
+import { sortTeam } from "../../lib/teamSort";
 
 type Person = {
   slug?: string;
@@ -36,9 +36,10 @@ for (const path of endpoints) {
     const res = await strapiGet(path);
     const raw = Array.isArray(res?.data) ? res.data : [];
     if (raw.length) {
-      team = raw
+      const filtered = raw
         .map(norm)
         .filter((p: Person) => p?.active !== false);
+      team = sortTeam(filtered);
       break;
     }
   } catch {
