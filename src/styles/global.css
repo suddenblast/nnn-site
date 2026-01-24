@@ -306,6 +306,14 @@ main{ padding:22px 0 48px; }
 .list--grid{
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
+.role-divider{
+  height:4px;
+  width:100%;
+  background:var(--line2);
+  border-radius:2px;
+  grid-column:1 / -1;
+  margin:10px 0;
+}
 
 /* ---------- Story cards ---------- */
 .storycard{

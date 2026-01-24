@@ -27,7 +27,17 @@ const { data } = await strapiGet("/api/stories", {
 });
 
 const stories = data.filter((s: any) => s.slug);
-const hero = stories.find((s: any) => s.featured) ?? stories[0] ?? null;
+const FEATURED_MAX_AGE_DAYS = 3;
+const FEATURED_MAX_AGE_MS = FEATURED_MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+
+const isFeaturedFresh = (story: Story) => {
+  if (!story?.featured) return false;
+  const ts = story?.airDate ? Date.parse(story.airDate) : NaN;
+  if (!Number.isFinite(ts)) return false;
+  return Date.now() - ts <= FEATURED_MAX_AGE_MS;
+};
+
+const hero = stories.find(isFeaturedFresh) ?? stories[0] ?? null;
 const latest = hero
   ? stories.filter((s: any) => s.slug !== hero.slug).slice(0, 12)
   : stories.slice(0, 12);

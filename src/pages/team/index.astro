@@ -77,90 +77,101 @@ if (!team.length) {
 
   <section class="list">
     {team.length ? (
-      team.map((p) => {
+      team.map((p, idx) => {
         const role = roleText(p.role);
+        const roleKey = (role || "").trim().toLowerCase();
+        const prevRoleKey =
+          idx > 0
+            ? (roleText(team[idx - 1]?.role) || "").trim().toLowerCase()
+            : "";
+        const showDivider = idx > 0 && roleKey !== prevRoleKey;
         const bio = plainText(p.bio);
         const src = absoluteMediaUrl(imageUrl(p.headshot));
         const alt = imageAlt(p.headshot, p.name ?? "Staff headshot");
 
-        return p.slug ? (
-          <a href={`/team/${p.slug}/`} class="storycard">
-            {/* LEFT: text */}
-            <div style="flex:1; min-width:0;">
-              <div class="story-title">{p.name ?? "Unnamed"}</div>
+        return (
+          <>
+            {showDivider && <div class="role-divider" aria-hidden="true" />}
+            {p.slug ? (
+              <a href={`/team/${p.slug}/`} class="storycard">
+                {/* LEFT: text */}
+                <div style="flex:1; min-width:0;">
+                  <div class="story-title">{p.name ?? "Unnamed"}</div>
 
-              {role && <div class="story-meta">{role}</div>}
+                  {role && <div class="story-meta">{role}</div>}
 
-              {bio && (
-                <div
-                  class="story-dek"
-                  style="
-                    margin-top:6px;
-                    display:-webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                    overflow:hidden;
-                  "
-                >
-                  {bio}
+                  {bio && (
+                    <div
+                      class="story-dek"
+                      style="
+                        margin-top:6px;
+                        display:-webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow:hidden;
+                      "
+                    >
+                      {bio}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* RIGHT: headshot */}
-            {src ? (
-              <img
-                src={src}
-                alt={alt}
-                loading="lazy"
-                class="staff-headshot"
-              />
+                {/* RIGHT: headshot */}
+                {src ? (
+                  <img
+                    src={src}
+                    alt={alt}
+                    loading="lazy"
+                    class="staff-headshot"
+                  />
+                ) : (
+                  <div
+                    class="staff-headshot staff-headshot--empty"
+                    aria-hidden="true"
+                  />
+                )}
+              </a>
             ) : (
-              <div
-                class="staff-headshot staff-headshot--empty"
-                aria-hidden="true"
-              />
-            )}
-          </a>
-        ) : (
-          <div class="storycard storycard-disabled" aria-disabled="true">
-            {/* LEFT: text */}
-            <div style="flex:1; min-width:0;">
-              <div class="story-title">{p.name ?? "Unnamed"}</div>
+              <div class="storycard storycard-disabled" aria-disabled="true">
+                {/* LEFT: text */}
+                <div style="flex:1; min-width:0;">
+                  <div class="story-title">{p.name ?? "Unnamed"}</div>
 
-              {role && <div class="story-meta">{role}</div>}
+                  {role && <div class="story-meta">{role}</div>}
 
-              {bio && (
-                <div
-                  class="story-dek"
-                  style="
-                    margin-top:6px;
-                    display:-webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                    overflow:hidden;
-                  "
-                >
-                  {bio}
+                  {bio && (
+                    <div
+                      class="story-dek"
+                      style="
+                        margin-top:6px;
+                        display:-webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow:hidden;
+                      "
+                    >
+                      {bio}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* RIGHT: headshot */}
-            {src ? (
-              <img
-                src={src}
-                alt={alt}
-                loading="lazy"
-                class="staff-headshot"
-              />
-            ) : (
-              <div
-                class="staff-headshot staff-headshot--empty"
-                aria-hidden="true"
-              />
+                {/* RIGHT: headshot */}
+                {src ? (
+                  <img
+                    src={src}
+                    alt={alt}
+                    loading="lazy"
+                    class="staff-headshot"
+                  />
+                ) : (
+                  <div
+                    class="staff-headshot staff-headshot--empty"
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
             )}
-          </div>
+          </>
         );
       })
     ) : (
