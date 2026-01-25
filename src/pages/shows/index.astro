@@ -280,9 +280,15 @@ for (const show of shows) {
         display: flex;
         gap: 14px;
         overflow-x: auto;
+        overflow-y: visible;
+        padding-top: 6px;
         padding-bottom: 8px;
         scroll-snap-type: x proximity;
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .shows-grid::-webkit-scrollbar {
+        display: none;
       }
       .showcard {
         flex: 0 0 clamp(240px, 70vw, 360px);
